@@ -1,4 +1,4 @@
-const NULL = require("utils.js").NULL;
+const NULL = require("./utils.js").NULL;
 
 class EventPacket {
     constructor(event, api, botId, botName, botNick) {
