@@ -1,13 +1,22 @@
 const Discord = require('discord.js');
+const fs = require('fs');
+
+const AI = require("Core.js");
+const EventHandler = require("EventHandler.js");
 const utils = require("utils.js");
 
 const discordbot = new Discord.client();
+const token = JSON.parse(fs.readFileSync("DiscordJS.config")).token;
+const api = "discord.js";
+let nick;
 
-const token = "MjYyMjY2MjA3MjEyNzk3OTcy.C0BTQg.5adsgp-eKZH537Y9iSBS4iezpQc";
+const botAI = new AI(api);
 
 discordbot.on("ready", function() {
-	console.log("I am ready!");
-	discordbot.user.setGame("World Domination");
+    const id = discordbot.user.id;
+    const name = discordbot.user.username;
+    botAI.updateData(id, name, nick);
+    console.log("I am ready!");
 });
 
 discordbot.on("message", function(ev) {

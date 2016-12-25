@@ -1,17 +1,19 @@
-const EventHandler = require("EventHandler.js");
 const ModuleHandler = require("ModuleHandler.js");
 const utils = require("utils.js");
 
 class AI {
-    constructor(id, name, api, nick) {
+    constructor(api) {
+        this.api = api;
+        this.moduleHandler = new ModuleHandler();
+    }
+    updateData(id, name, nick) {
         this.id = id;
         this.name = name;
         this.nick = nick||this.getNick(name);
-        this.api = api;
     }
     getNick(name) {
         let nick = name;
-        for (let i=0; i<name.lenght; i++) {
+        for (let i=0; i<name.length; i++) {
             if (!utils.isLetter(name.charAt(i))) {
                 nick = name.substring(0, i);
                 break;

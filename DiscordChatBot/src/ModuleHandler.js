@@ -51,6 +51,14 @@ class ModuleHandler {
     }
     send(eventpacket,infopacket) { //sends the eventpacket and infopacket to all modules
         for (var i=0, j=this.data.loaded.length; i<j; i++){
+            
+            if (infopacket.doJump) { //If another module asked for jump
+                const index = this.data.searchLoad("uid", infopacket.jumpUid); //find the module index in the loaded array
+                if (index !== -1) { //if exists
+                    i = index; //jump
+                }
+            }
+            
             //infopacket = this.data.loaded[i].main(eventpacket,infopacket); //overwrites infopacket for next module to read
             //*oops* does not need since infopacket is already an object
             try {
@@ -99,6 +107,17 @@ class ModuleData {
     }
     searchLoad(prop, value) { //searches loaded modules by property and value
         return this.search("loaded", prop, value);
+    }
+    searchLoadIndex(prop, value) {
+        const arrayname = "loaded";
+        var array = this[arrayname];
+        for (var i=0, j=array.length; i<j; i++){
+            if (array[i][prop]===value){
+                return i; //if found, returns the module index, otherwise return -1
+            } else {
+                return -1;
+            }
+        }
     }
 }
 
