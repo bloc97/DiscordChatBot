@@ -1,17 +1,26 @@
 class ModuleHandler {
-    constructor() {
-        this.isDebug = false;
+    constructor(debug) {
+        this.isDebug = debug||false;
         this.data = new ModuleData();
+        this.modules = {};
     }
     register(module) { //registers the module
         this.data.module.push(module); //pushes the module object into the array, so it can be accessed through iteration
-        this[module.refname]=module; //pushes the module object into the AI object, so it can be accessed manually using AI.Module.obj
+        this.modules[module.refname]=module; //pushes the module object into the module object, so it can be accessed manually using AI.ModuleHandler.modules
+        
+        if (this.debug) {
+            console.log("Module \"" + module.refname + "\" succesfully registered.");
+        }
 
     }
     load(module) { //makes the module autorun with each evenpacket
         if (this.data.checkReg(module) && !this.data.checkLoad(module)){
             this.data.loaded.push(module);
             this.data.sorted=false;
+        }
+        
+        if (this.debug) {
+            console.log("Module \"" + module.refname + "\" succesfully loaded.");
         }
     }
     unload(module) {
@@ -51,22 +60,19 @@ class ModuleHandler {
     }
     send(eventpacket,infopacket) { //sends the eventpacket and infopacket to all modules
         for (var i=0, j=this.data.loaded.length; i<j; i++){
-            
             if (infopacket.doJump) { //If another module asked for jump
                 const index = this.data.searchLoad("uid", infopacket.jumpUid); //find the module index in the loaded array
                 if (index !== -1) { //if exists
                     i = index; //jump
+                    infopacket.doJump = false;
                 }
             }
-            
-            //infopacket = this.data.loaded[i].main(eventpacket,infopacket); //overwrites infopacket for next module to read
-            //*oops* does not need since infopacket is already an object
             try {
                 this.data.loaded[i].main(eventpacket,infopacket);
             } catch (err) {
                 //handle corrupted infopacket here
                 if (this.isDebug){
-                    infopacket.output.addMessage("Debug: ERROR in Module '" + this.data.loaded[i].name + "' " + err);
+                    console.log("Debug: ERROR in Module '" + this.data.loaded[i].name + "' " + err);
                 }
 
                 continue;

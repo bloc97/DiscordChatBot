@@ -3,12 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/utils.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/Deprec/AI_Module_COMP.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/Modules/Command_Line.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/Core.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/EventHandler.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/ModuleHandler.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/require/ModuleHandler.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/DiscordJS.config</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/require/modules/CommandProc.js</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/src/Run_DiscordJS.js</file>
         </group>
     </open-files>
