@@ -7,8 +7,7 @@ class AI {
         this.isDebug = debug||false;
         this.moduleHandler = new ModuleHandler(this.isDebug);
         if (this.isDebug) {
-            console.log(this.api);
-            console.log(this.moduleHandler);
+            console.log(utils.getTimeStamp() + "New AI Created, API: " + this.api);
         }
     }
 //    updateData(id, name, nick) {

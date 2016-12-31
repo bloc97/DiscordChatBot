@@ -3,8 +3,12 @@ const NULL = utils.NULL;
 
 class EventPacket {
     
-    constructor(event, api, botId, botName, botNick) {
-        if (api === "sinusbot") {
+    constructor(api, type, event, client) {
+        this.api = api;
+        this.type = type;
+        this.event = event;
+        
+        if (this.api === "sinusbot") {
             this.rawmsg = event.msg||NULL;
             this.msg = event.msg.toLowerCase()||NULL;
             this.mode = event.mode;
@@ -14,23 +18,11 @@ class EventPacket {
             //this.botNick = sinusbot.getNick(); //Nick that appears in teamspeak
             //this.botName = ""; //Name that bot responds to
             //that.isBotCalled = (AI.Core.compare(that.msg,that.botName)||that.mode<=1);
-        } else if (api === "discord.js") {
-            this.api = api;
-            this.event = event; //discord.js Message (or else) Class
-            
-            this.serverId = event.guild.id;
-            this.channelId = event.channel.id;
-            this.eventId = event.id;
-            
-            this.user = event.author; //discord.js User Class
-            this.userId = event.author.id;
-            this.userName = event.author.username;
-            
-            this.botId = botId;
-            this.botName = botName;
-            this.botNick = botNick;
-            
-            switch (event.channel.type) {
+        } else if (this.api === "discord.js") {
+            if (this.type === "ready") {
+                this.msg = "";
+            } else if (this.type === "message") {
+                switch (event.channel.type) {
                 case "dm":
                     this.mode = 2;
                     break;
@@ -42,21 +34,38 @@ class EventPacket {
                     break;
                 default :
                     this.mode = 0;
+                }
+                this.serverId = (this.mode === 0) ? event.guild.id : NULL;
+                this.channelId = event.channel.id;
+                this.eventId = event.id;
+
+                this.user = event.author; //discord.js User Class
+                this.userId = event.author.id;
+                this.userName = event.author.username;
+
+                this.bot = client;
+                this.botUser = client.user;
+                this.botId = client.user.id;
+                this.botName = client.user.username;
+                this.botNick = utils.getNick(this.botName);
+
+
+                this.rawmsg = event.content||NULL;
+
+                const botMention = "<@" + this.botId + ">";
+                const msgWithoutMention = removeMention(this.rawmsg, botMention);
+                const msgWithoutBotNick = removeBotNick(msgWithoutMention, this.botNick);
+
+                this.isBotMentionned = this.rawmsg.indexOf(botMention) !== -1;
+                this.isBotNamed = msgWithoutMention.toLowerCase().indexOf(this.botNick) === 0;
+                this.isPrivate = this.mode === 2;
+
+                this.strength = this.isBotMentionned + this.isBotNamed + this.isPrivate;
+
+                this.msg = msgWithoutBotNick.toLowerCase();
             }
             
-            this.rawmsg = event.content||NULL;
             
-            const botMention = "<@" + botId + ">";
-            const msgWithoutMention = removeMention(this.rawmsg, botMention);
-            const msgWithoutBotNick = removeBotNick(msgWithoutMention, botNick);
-            
-            this.isBotMentionned = this.rawmsg.indexOf(botMention) !== -1;
-            this.isBotNamed = msgWithoutMention.toLowerCase().indexOf(botNick) === 0;
-            this.isMsgPrivate = this.mode === 2;
-            
-            this.strength = this.isBotMentionned + this.isBotNamed + this.isMsgPrivate;
-            
-            this.msg = msgWithoutBotNick.toLowerCase();
             
         }
     }
@@ -69,14 +78,14 @@ function removeMention(msg, botMention) { //removes the bot mention from the msg
     if (index !== -1) {
         newmsg = msg.slice(0, index)+msg.slice(index+botMention.length, msg.length);
     }
-    return utils.removeWhitespaces(newmsg);
+    return utils.clearWhitespaces(newmsg);
 }
 function removeBotNick(msgWithoutMention, botNick) { //removes the bot nickname from the msg
     let msgParsed = msgWithoutMention;
     if (msgWithoutMention.toLowerCase().indexOf(botNick) === 0) {
         msgParsed = msgWithoutMention.slice(botNick.length, msgWithoutMention.length);
     }
-    return utils.removeWhitespaces(msgParsed);
+    return utils.clearWhitespaces(msgParsed);
 }
 
 class InfoPacket {
@@ -84,6 +93,8 @@ class InfoPacket {
         this.output = new OutputData();
         this.isHalted = false;
         this.doJump = false;
+        this.doSave = false;
+        this.doTerminate = false;
         this.jumpID = 0;
     }
     halt() {
@@ -92,6 +103,12 @@ class InfoPacket {
     jump(uid) {
         this.doJump = true;
         this.jumpUid = uid;
+    }
+    save() {
+        this.doSave = true;
+    }
+    exit() {
+        this.doTerminate = true;
     }
 }
 

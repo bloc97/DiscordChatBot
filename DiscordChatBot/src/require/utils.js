@@ -43,6 +43,24 @@ const findNextChar = function(msg, char, startindex) {
     return msg.length;
 };
 
+const getTimeStamp = function() {
+    const time = new Date();
+    let seconds = time.getSeconds();
+    let minutes = time.getMinutes();
+    let hours = time.getHours();
+    if (seconds < 10) {
+        seconds = "0"+seconds;
+    }
+    if (minutes < 10) {
+        minutes = "0"+minutes;
+    }
+    if (hours < 10) {
+        hours = "0"+hours;
+    }
+    
+    return "[" + hours + ":" + minutes + ":" + seconds + "] ";
+};
+
 exports.NULL = NULL;
 exports.compare = compare;
 exports.contains = contains;
@@ -50,3 +68,4 @@ exports.isLetter = isLetter;
 exports.getNick = getNick;
 exports.clearWhitespaces = clearWhitespaces;
 exports.findNextChar = findNextChar;
+exports.getTimeStamp = getTimeStamp;

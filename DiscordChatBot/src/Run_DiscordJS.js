@@ -14,13 +14,15 @@ const api = "discord.js";
 const botAI = new AI(api, debug);
 
 const Module_CommandProc = require("./require/modules/CommandProc.js");
+const Module_DebugTools = require("./require/modules/DebugTools.js");
 //const Module_AddonManager = 
 //const Module_NLP = 
 //const Module_DataHandler =
 //const Module_Latency =
 //const Module_Output =
 
-const commandProc = new Module_CommandProc;
+const commandProc = new Module_CommandProc(debug);
+const debugtools = new Module_DebugTools(debug);
 //const addonManager = new Module_AddonManager();
 //const nlp = new Module_NLP();
 //const dataHandler = new Module_DataHandler();
@@ -28,6 +30,7 @@ const commandProc = new Module_CommandProc;
 //const output = new Module_Output();
 
 botAI.moduleHandler.register(commandProc);
+botAI.moduleHandler.register(debugtools);
 //botAI.moduleHandler.register(addonManager);
 //botAI.moduleHandler.register(nlp);
 //botAI.moduleHandler.register(dataHandler);
@@ -37,15 +40,14 @@ botAI.moduleHandler.register(commandProc);
 discordbot.on("ready", function() {
     
     botAI.moduleHandler.load(commandProc);
-    console.log("NLP Bot started up succesfully!");
+    botAI.moduleHandler.load(debugtools);
+    botAI.moduleHandler.sort();
+    botAI.moduleHandler.initData("./data_" + discordbot.user.id + ".json");
+    console.log(utils.getTimeStamp() + "ARIMA Bot started up succesfully!"); //ARtificially-Intelligent Modular Assistant
 });
 
 discordbot.on("message", function(ev) {
-    const id = discordbot.user.id;
-    const name = discordbot.user.username||utils.NULL;
-    const nick = utils.getNick(name)||name;
-    
-    const eventPacket = new EventHandler.EventPacket(ev, api, id, name, nick);
+    const eventPacket = new EventHandler.EventPacket(api, "message", ev, discordbot);
     const infoPacket = new EventHandler.InfoPacket();
     
     botAI.moduleHandler.send(eventPacket, infoPacket);

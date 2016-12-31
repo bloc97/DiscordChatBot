@@ -1,15 +1,24 @@
+const EventHandler = require("./EventHandler.js");
+const utils = require("./utils.js");
+const fs = require("fs");
+
+
 class ModuleHandler {
     constructor(debug) {
         this.isDebug = debug||false;
         this.data = new ModuleData();
+        this.dataHandler = new DataHandler(debug);
         this.modules = {};
+    }
+    initData(datafile) {
+        this.dataHandler.init(datafile);
     }
     register(module) { //registers the module
         this.data.module.push(module); //pushes the module object into the array, so it can be accessed through iteration
         this.modules[module.refname]=module; //pushes the module object into the module object, so it can be accessed manually using AI.ModuleHandler.modules
         
-        if (this.debug) {
-            console.log("Module \"" + module.refname + "\" succesfully registered.");
+        if (this.isDebug) {
+            console.log(utils.getTimeStamp() + "ModuleHandler: Module \"" + module.refname + "\" succesfully registered.");
         }
 
     }
@@ -19,8 +28,8 @@ class ModuleHandler {
             this.data.sorted=false;
         }
         
-        if (this.debug) {
-            console.log("Module \"" + module.refname + "\" succesfully loaded.");
+        if (this.isDebug) {
+            console.log(utils.getTimeStamp() + "ModuleHandler: Module \"" + module.refname + "\" succesfully loaded.");
         }
     }
     unload(module) {
@@ -58,27 +67,41 @@ class ModuleHandler {
             this.data.sorted=true;
         }
     }
-    send(eventpacket,infopacket) { //sends the eventpacket and infopacket to all modules
+    send(eventpacket) { //sends the eventpacket and infopacket to all modules
+        this.dataHandler.smartSave();
+        let infopacket = new EventHandler.InfoPacket();
+        
         for (var i=0, j=this.data.loaded.length; i<j; i++){
+            
             if (infopacket.doJump) { //If another module asked for jump
-                const index = this.data.searchLoad("uid", infopacket.jumpUid); //find the module index in the loaded array
+                const index = this.data.searchLoadIndex("uid", infopacket.jumpUid); //find the module index in the loaded array
                 if (index !== -1) { //if exists
                     i = index; //jump
-                    infopacket.doJump = false;
                 }
+                infopacket.doJump = false;
             }
+            
             try {
-                this.data.loaded[i].main(eventpacket,infopacket);
+                this.data.loaded[i].main(eventpacket,infopacket, this.dataHandler.getData(this.data.loaded[i].uid));
             } catch (err) {
                 //handle corrupted infopacket here
                 if (this.isDebug){
-                    console.log("Debug: ERROR in Module '" + this.data.loaded[i].name + "' " + err);
+                    console.log(utils.getTimeStamp() + "ModuleHandler: ERROR in Module '" + this.data.loaded[i].name + "' " + err);
                 }
 
                 continue;
             }
+            if (infopacket.doSave) {
+                this.dataHandler.save();
+                infopacket.doSave = false;
+            }
+            if (infopacket.doTerminate) {
+                infopacket.doTerminate = false;
+                process.exit();
+            }
             if (infopacket.isHalted) break;
         }
+        
     }
 
 }
@@ -123,6 +146,67 @@ class ModuleData {
             } else {
                 return -1;
             }
+        }
+    }
+}
+
+class DataHandler {
+    constructor(debug) {
+        this.isDebug = debug||false;
+        this.internalData = {};
+        this.eventCounter = 0;
+        this.dataFile = "./DEFAULT.json";
+    }
+    init(dataFile) {
+        this.dataFile = dataFile;
+        this.load();
+        const me = this;
+        //this.interval = setInterval(function(){const jsonData = JSON.stringify(me.internalData); fs.writeFileSync(me.dataFile, jsonData);}, 30000);
+    }
+    initReadOnly(dataFile) {
+        this.dataFile = dataFile;
+        this.load();
+    }
+    smartSave() {
+        const me = this;
+        if (me.eventCounter < 0) {
+            me.eventCounter = 0;
+        }
+        me.eventCounter++;
+        //console.log(me.eventCounter);
+        this.saveTimer = setTimeout(
+                function() {
+                    me.eventCounter--;
+                    if (me.eventCounter === 0) {
+                        me.save();
+                        //console.log("Saved.");
+                    }
+                    //console.log(me.eventCounter);
+                }, 30000);
+    }
+    load() {
+        try {
+            const jsonData = fs.readFileSync(this.dataFile);
+            this.internalData = JSON.parse(jsonData);
+            if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Loaded database from file.");
+        } catch (err) {
+            if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Database not present, creating new database...");
+            fs.writeFileSync(this.dataFile, "{}");
+            if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Done.");
+        }
+
+    }
+    save() {
+        const jsonData = JSON.stringify(this.internalData);
+        fs.writeFileSync(this.dataFile, jsonData);
+        if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Saved database to file.");
+    }
+    getData(uid) {
+        if (this.internalData[uid]) {
+            return this.internalData[uid];
+        } else {
+            this.internalData[uid] = {};
+            return this.internalData[uid];
         }
     }
 }
