@@ -138,6 +138,25 @@ const getTimeFromMiliseconds = function(ms) {
     }
 };
 
+const log = function(str) {
+    console.log(getTimeStamp() + str);
+};
+const logErr = function(str) {
+    console.log(getTimeStamp() + "\x1b[31m%s\x1b[0m", str);    
+};
+const logInfo = function(str) {
+    console.log(getTimeStamp() + "\x1b[36m%s\x1b[0m", str);
+};
+const logWarn = function(str) {
+    console.log(getTimeStamp() + "\x1b[33m%s\x1b[0m", str);
+};
+const logDone = function(str) {
+    console.log(getTimeStamp() + "\x1b[32m%s\x1b[0m", str);
+};
+const logNew = function(str) {
+    console.log(getTimeStamp() + "\x1b[1m%s\x1b[0m", str);
+};
+
 exports.NULL = NULL;
 exports.compare = compare;
 exports.contains = contains;
@@ -148,3 +167,9 @@ exports.findNextChar = findNextChar;
 exports.getTimeStamp = getTimeStamp;
 exports.getSizeStamp = getSizeStamp;
 exports.getTimeFromMiliseconds = getTimeFromMiliseconds;
+exports.log = log;
+exports.logErr = logErr;
+exports.logWarn = logWarn;
+exports.logNew = logNew;
+exports.logInfo = logInfo;
+exports.logDone = logDone;

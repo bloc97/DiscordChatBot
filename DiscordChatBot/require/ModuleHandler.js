@@ -16,13 +16,26 @@ class ModuleHandler {
     registerAll(path) {
         const moduleFiles = fs.readdirSync(path);
         for (let i=0; i<moduleFiles.length; i++) {
-            const Module = require("./modules/"+moduleFiles[i]);
-            this.register(new Module(this.isDebug));
+            let Module;
+            
+            try {
+                Module = require("./modules/"+moduleFiles[i]);
+                this.register(new Module(this.isDebug));
+            } catch (err) {
+                if (this.isDebug){
+                    utils.logErr("ModuleHandler: ERROR in Module '" + moduleFiles[i] + "' " + err);
+                    utils.logWarn("ModuleHandler: WARNING Skipping file '" + moduleFiles[i] + "'");
+                }
+            }
         }
     }
     loadAll() {
         for (let i=0; i<this.data.module.length; i++) {
-            if (!this.data.module[i].isExample) this.load(this.data.module[i]);
+            if (!this.data.module[i].isExample) {
+                this.load(this.data.module[i]);
+            } else {
+                utils.logWarn("ModuleHandler: Skipping module '" + this.data.module[i].refname + "'");
+            }
         }
         this.sort();
     }
@@ -31,7 +44,7 @@ class ModuleHandler {
         this.modules[module.refname]=module; //pushes the module object into the module object, so it can be accessed manually using AI.ModuleHandler.modules
         
         if (this.isDebug) {
-            console.log(utils.getTimeStamp() + "ModuleHandler: Module \"" + module.refname + "\" succesfully registered.");
+            utils.log("ModuleHandler: Module \"" + module.refname + "\" succesfully registered.");
         }
 
     }
@@ -42,7 +55,7 @@ class ModuleHandler {
         }
         
         if (this.isDebug) {
-            console.log(utils.getTimeStamp() + "ModuleHandler: Module \"" + module.refname + "\" succesfully loaded.");
+            utils.log("ModuleHandler: Module \"" + module.refname + "\" succesfully loaded.");
         }
     }
     unload(module) {
@@ -99,7 +112,7 @@ class ModuleHandler {
             } catch (err) {
                 //handle corrupted infopacket here
                 if (this.isDebug){
-                    console.log(utils.getTimeStamp() + "ModuleHandler: ERROR in Module '" + this.data.loaded[i].name + "' " + err);
+                    utils.logErr("ModuleHandler: ERROR in Module '" + this.data.loaded[i].name + "' " + err);
                 }
 
                 continue;
@@ -245,18 +258,18 @@ class DataHandler {
         try {
             const jsonData = fs.readFileSync(this.dataFile);
             this.internalData = JSON.parse(jsonData);
-            if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Loaded database from file.");
+            if(this.isDebug) utils.log("DataHandler: Loaded database from file.");
         } catch (err) {
-            if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Database not present, creating new database...");
+            if(this.isDebug) utils.log("DataHandler: Database not present, creating new database...");
             fs.writeFileSync(this.dataFile, "{}");
-            if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Done.");
+            if(this.isDebug) utils.log("DataHandler: Done.");
         }
 
     }
     save() {
         const jsonData = JSON.stringify(this.internalData);
         fs.writeFileSync(this.dataFile, jsonData);
-        if(this.isDebug) console.log(utils.getTimeStamp() + "DataHandler: Saved database to file.");
+        if(this.isDebug) utils.log("DataHandler: Saved database to file.");
     }
     getData(uid) {
         if (this.internalData[uid]) {
