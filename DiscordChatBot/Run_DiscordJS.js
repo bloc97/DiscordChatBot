@@ -16,7 +16,7 @@ const token = config.token;
 const debug = config.debug;
 const api = "discord.js";
 
-//Initialises ARIMA Engine
+//Initialises the Logic
 const botAI = new AI(api, debug);
 botAI.moduleHandler.registerAll("./require/modules/");
 
@@ -28,7 +28,7 @@ discordbot.on("ready", function() {
     console.log(utils.getTimeStamp() + "Connected.");
     botAI.moduleHandler.loadAll();
     botAI.moduleHandler.initData("./data_" + discordbot.user.id + ".json");
-    console.log(utils.getTimeStamp() + "ARIMA Bot started up succesfully!"); //ARtificially-Intelligent Modular Assistant
+    console.log(utils.getTimeStamp() + "Self-Bot started up succesfully!");
     console.log(utils.getTimeStamp() + "Attched to user " + discordbot.user.id + " with the name " + discordbot.user.username + ".");
 });
 
