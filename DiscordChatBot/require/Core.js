@@ -10,16 +10,6 @@ class AI {
             utils.logNew("New AI Created, API: " + this.api);
         }
     }
-//    updateData(id, name, nick) {
-//        this.id = id;
-//        this.name = name;
-//        this.nick = nick;
-//        if (this.isDebug) {
-//            console.log("ID: " + this.id);
-//            console.log("Name: " + this.name);
-//            console.log("Nick: " + this.nick);
-//        }
-//    }
 
 }
 

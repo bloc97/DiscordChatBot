@@ -6,7 +6,7 @@ class Toolbox { //This is an module that adds some essential commands to the sel
         this.name = "TOOL";
         this.desc = "Toolbox Module";
         this.refname = "ToolMod";
-        this.id = 500, //use an ID larger than 100 so that CommandProc processes the message before this module
+        this.id = 700, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "tool1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
         //modules are run in order, from the smallest id to the largest id.
@@ -51,7 +51,7 @@ class Toolbox { //This is an module that adds some essential commands to the sel
             this.capture("all");
         }
         
-        if (symbol !== "/" && command !=="toolbox") {
+        if (symbol !== "/" || command !=="toolbox") {
             return;
         }
         this.capture("all");
