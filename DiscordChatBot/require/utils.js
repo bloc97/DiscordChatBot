@@ -99,6 +99,45 @@ const getDecimalPrecision = function(value, prec) {
     }
 };
 
+const getTimeFromMiliseconds = function(ms) {
+    const totalSeconds = ms/1000;
+    let dayText = "";
+    let hourText = "";
+    let minuteText = "";
+    let secondText = "";
+    
+    if (totalSeconds > 86400) {
+        const days = Math.floor(totalSeconds/86400);
+        dayText = (days === 1) ? " Day" : " Days";
+        dayText = days + dayText;
+    }
+    if (totalSeconds > 3600) {
+        const hours = Math.floor(totalSeconds%86400/3600);
+        hourText = (hours === 1) ? " Hour" : " Hours";
+        hourText = hours + hourText;
+    }
+    if (totalSeconds > 60) {
+        const minutes = Math.floor(totalSeconds%3600/60);
+        minuteText = (minutes === 1) ? " Minute" : " Minutes";
+        minuteText = minutes + minuteText;
+    }
+    if (totalSeconds > 0) {
+        const seconds = Math.floor(totalSeconds);
+        secondText = (seconds === 1) ? " Second" : " Seconds";
+        secondText = seconds + secondText;
+    }
+    
+    if (totalSeconds > 86400) {
+        return dayText + " and " + hourText;
+    } else if (totalSeconds > 3600) {
+        return hourText + " and " + minuteText;
+    } else if (totalSeconds > 60) {
+        return minuteText + " and " + secondText;
+    } else {
+        return secondText;
+    }
+};
+
 exports.NULL = NULL;
 exports.compare = compare;
 exports.contains = contains;
@@ -108,3 +147,4 @@ exports.clearWhitespaces = clearWhitespaces;
 exports.findNextChar = findNextChar;
 exports.getTimeStamp = getTimeStamp;
 exports.getSizeStamp = getSizeStamp;
+exports.getTimeFromMiliseconds = getTimeFromMiliseconds;

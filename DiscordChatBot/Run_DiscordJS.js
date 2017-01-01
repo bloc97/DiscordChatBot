@@ -6,9 +6,9 @@ const EventHandler = require("./require/EventHandler.js");
 //Parses the config file
 let configFile;
 try {
-    configFile = fs.readFileSync("DiscordJS.config");
+    configFile = fs.readFileSync("self_DiscordJS.config");
 } catch (err) {
-    console.log("Error, could not find DiscordJS.config.");
+    console.log("Error, could not find self_DiscordJS.config.");
     process.exit();
 }
 const config = JSON.parse(configFile);
