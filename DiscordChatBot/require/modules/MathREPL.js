@@ -1,13 +1,14 @@
 const utils = require("../utils.js");
+const mathjs = require("mathjs");
 
-class NodeRepl { //This is an module that adds some essential commands to the selfbot
+class MathRepl { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
-        this.name = "REPL";
-        this.desc = "Node REPL Module";
-        this.refname = "ReplMod";
-        this.id = 600, //use an ID larger than 100 so that CommandProc processes the message before this module
-        this.uid = "repl1000"; //Unique ID used to save data to file
+        this.name = "MREP";
+        this.desc = "MathJS REPL Module";
+        this.refname = "MrepMod";
+        this.id = 620, //use an ID larger than 100 so that CommandProc processes the message before this module
+        this.uid = "mrep1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
         //modules are run in order, from the smallest id to the largest id.
         
@@ -16,6 +17,8 @@ class NodeRepl { //This is an module that adds some essential commands to the se
         this.consoleChannel = {};
         this.consoleStr = "";
         this.consoleDoReturnEval = true;
+        
+        this.currentScope = {};
         
         this.currentBot = {};
         this.currentBotId = "";
@@ -37,7 +40,7 @@ class NodeRepl { //This is an module that adds some essential commands to the se
             this.consoleStr = this.consoleStr + ev.content + "\n> ";
             let evalStr = "";
             try {
-                evalStr = global.eval(ev.content + "");
+                evalStr = mathjs.eval(ev.content + "", this.currentScope);
             } catch (err) {
                 evalStr = err;
             }
@@ -57,18 +60,12 @@ class NodeRepl { //This is an module that adds some essential commands to the se
         if (symbol !== "/" || command !=="console") {
             return;
         }
-        if (args[0] === "init" && !this.isConsoleActive && (!args[1] || args[1] === "node")) {
-            this.consoleStr = "Discord Selfbot Node REPL [Version 0.01]\n(c) 2016 MIT. All rights reserved.\n\n> node\n> ";
+        if (args[0] === "init" && !this.isConsoleActive && args[1] === "math") {
+            this.consoleStr = "Discord Selfbot MathJS REPL [Version 0.01]\n(c) 2016 MIT. All rights reserved.\n\n> mathjs\n> ";
             ev.edit("```js\n"+this.consoleStr+"\n```").then().catch(err => {});
             this.isConsoleActive = true;
             this.consoleBox = ev;
             this.consoleChannel = ev.channel;
-            
-            const me = this;
-            global.print = function(x) {
-                me.consoleStr = me.consoleStr + x + "\n> ";
-            };
-            
             
         } else if (args[0] === "refresh" && this.isConsoleActive) {
             this.consoleBox.delete().then().catch(err => {});
@@ -97,4 +94,4 @@ class NodeRepl { //This is an module that adds some essential commands to the se
 }
 
 
-module.exports = NodeRepl;
+module.exports = MathRepl;
