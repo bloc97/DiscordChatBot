@@ -22,7 +22,7 @@ class ModuleHandler {
     }
     loadAll() {
         for (let i=0; i<this.data.module.length; i++) {
-            this.load(this.data.module[i]);
+            if (!this.data.module[i].isExample) this.load(this.data.module[i]);
         }
         this.sort();
     }

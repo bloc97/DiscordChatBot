@@ -1,6 +1,6 @@
 const utils = require("../utils.js");
 
-class Toolbox { //This is an example module
+class Toolbox { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
         this.name = "TOOL";
