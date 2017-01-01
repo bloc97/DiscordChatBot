@@ -9,17 +9,14 @@ class EventPacket {
         this.event = event;
         this.bot = botClient;
 
-        if (this.api === "sinusbot") {
-            this.rawmsg = event.msg||NULL;
-            this.msg = event.msg.toLowerCase()||NULL;
-            this.mode = event.mode;
-            this.clientId = event.clientId;
-            //that.clientUid = event.clientUid;
-            this.clientNick = event.clientNick;
-            //this.botNick = sinusbot.getNick(); //Nick that appears in teamspeak
-            //this.botName = ""; //Name that bot responds to
-            //that.isBotCalled = (AI.Core.compare(that.msg,that.botName)||that.mode<=1);
-        } else if (this.api === "discord.js") {
+//        if (this.api === "sinusbot") {
+//            this.rawmsg = event.msg||NULL;
+//            this.msg = event.msg.toLowerCase()||NULL;
+//            this.mode = event.mode;
+//            this.clientId = event.clientId;
+//            this.clientNick = event.clientNick;
+//        } else 
+        if (this.api === "discord.js") {
             if (this.type === "ready") {
                 this.strength = -1;
             } else if (this.type === "message") {
@@ -60,10 +57,10 @@ class EventPacket {
                 this.isPrivate = this.mode === 2;
 
                 this.strength = this.isBotMentionned + this.isBotNamed + this.isPrivate;
-
+                this.isSelf = this.userId === this.botId;
+                
                 this.msg = msgWithoutBotNick.toLowerCase();
             }
-            
         }
     }
 }

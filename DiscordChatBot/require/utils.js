@@ -48,6 +48,8 @@ const findNextChar = function(msg, char, startindex) {
 
 const getTimeStamp = function() {
     const time = new Date();
+    const month = getMonthAbb(time.getMonth());
+    const day = time.getDate();
     let seconds = time.getSeconds();
     let minutes = time.getMinutes();
     let hours = time.getHours();
@@ -61,7 +63,17 @@ const getTimeStamp = function() {
         hours = "0"+hours;
     }
     
-    return "[" + hours + ":" + minutes + ":" + seconds + "] ";
+    return "[" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds + "] ";
+};
+
+const getMonthAbb = function(n) {
+    n = Math.floor(+n)+1;
+    const arr = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (n > 0 && n < 13) {
+        return arr[n];
+    } else {
+        return arr[0];
+    }
 };
 
 const getSizeStamp = function(bytes) {

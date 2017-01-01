@@ -4,7 +4,14 @@ const AI = require("./require/Core.js");
 const EventHandler = require("./require/EventHandler.js");
 
 //Parses the config file
-const config = JSON.parse(fs.readFileSync("DiscordJS.config"));
+let configFile;
+try {
+    configFile = fs.readFileSync("DiscordJS.config");
+} catch (err) {
+    console.log("Error, could not find DiscordJS.config.");
+    process.exit();
+}
+const config = JSON.parse(configFile);
 const token = config.token;
 const debug = config.debug;
 const api = "discord.js";
@@ -22,6 +29,7 @@ discordbot.on("ready", function() {
     botAI.moduleHandler.loadAll();
     botAI.moduleHandler.initData("./data_" + discordbot.user.id + ".json");
     console.log(utils.getTimeStamp() + "ARIMA Bot started up succesfully!"); //ARtificially-Intelligent Modular Assistant
+    console.log(utils.getTimeStamp() + "Attched to user " + discordbot.user.id + " with the name " + discordbot.user.username + ".");
 });
 
 discordbot.on("message", function(ev) {
@@ -29,11 +37,7 @@ discordbot.on("message", function(ev) {
     
     botAI.moduleHandler.send(eventPacket);
     
-//	if (ev.content === "christmas") {
-//            ev.channel.sendMessage("Merry Christmas! @everyone");
-//		//ev.reply("Merry Christmas! @everyone");
-//	}
 });
 
-discordbot.login(token);
+discordbot.login(token).then().catch(err => console.error(err));
 console.log(utils.getTimeStamp() + "Connecting to discord...");
