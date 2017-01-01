@@ -8,3 +8,4 @@ This currently requires these libraries:
 use npm install as needed  
 https://github.com/hydrabolt/discord.js/  
 https://github.com/oliver-moran/jimp  
+https://github.com/josdejong/mathjs  
