@@ -34,19 +34,19 @@ class Toolbox { //This is an example module
         this.currentEv = eventpacket.event;
         this.currentChannel = eventpacket.event.channel;
         this.currentBot = eventpacket.bot;
-        this.currentBotId = eventpacket.bot.id;
+        this.currentBotId = eventpacket.bot.user.id;
         
         if (this.isCommandPending()) {
             if (command === "yes") {
                 this.capture("choice");
-                runPrune();
-                
                 this.clear("choice");
+                this.runPrune();
+                
             } else if (command === "no") {
                 this.capture("choice");
-                cancelPrune();
-                
                 this.clear("choice");
+                this.cancelPrune();
+                
             }
             this.capture("all");
         }
@@ -57,11 +57,14 @@ class Toolbox { //This is an example module
         this.capture("all");
         if (args[0] === "prune") {
             this.capture("prune");
-            commandPrune(args[1], args[2]);
+            this.commandPrune(args[1], args[2]);
         }
         
     }
     commandPrune(arg1, arg2) {
+        const self = this;
+        self.isPrune = true;
+        
         let number = 0;
         const isArg1Number = +arg1 === +arg1;
         const isArg2Number = +arg2 === +arg2;
@@ -74,27 +77,29 @@ class Toolbox { //This is an example module
             number = 1;
         }           
         if (!arg1 || arg1 === "self" || isArg1Number) {
-            this.currentChannel.fetchMessages({limit:100})
-                .then(collection => {
-                    let array = collection.array();
-                    let myarray = array.filter(m => m.author.id === this.currentBotId);
+            self.currentChannel.fetchMessages({limit:100})
+                .then(messages => {
+                    let array = messages.array();
+                    const myarray = array.filter(m => m.author.id === self.currentBotId);
                     let count = Math.min(number+1, myarray.length);
                     
                     myarray.length = count;
                     let lastindex = myarray.length-1;
                     
-                    this.pruneMsgs = myarray;
+                    self.pruneMsgs = myarray;
                     
                     const lastdate = myarray[lastindex].createdAt.valueOf();
                     const currentdate = new Date().valueOf();
                     const diff = currentdate-lastdate;
                     
                     const timeStamp = utils.getTimeFromMiliseconds(diff);
+                    const selfPruneEmbed = newSelfPruneEmbed(count, myarray, timeStamp, self.currentBot, self.currentEv);
+                    this.currentEv.edit("", {embed: selfPruneEmbed}).then().catch(err => {});
                     
-                    this.currentEv.edit("", {embed: newSelfPruneEmbed(count, myarray, timeStamp, this.currentBot, this.currentEv)}).then().catch(err => {});
                     
-                    
-            }).catch(err => {});
+            }).then().catch(err => {console.log(err);});
+        } else if (arg1 && arg1 !== "self" && !isArg1Number) {
+            
         }
     }
     runPrune() {
@@ -133,7 +138,7 @@ class Toolbox { //This is an example module
 
 const newSelfPruneEmbed = function(count, myarray, timeStamp, currentBot, currentEv) {
     const lastindex = myarray.length - 1;
-    const embed = {embed: {
+    const embed = {
                       color: 3447003,
                       author: {
                         name: currentBot.user.username + "'s Selfbot"
@@ -152,7 +157,7 @@ const newSelfPruneEmbed = function(count, myarray, timeStamp, currentBot, curren
                         //icon_url: client.user.avatarURL,
                         text: "Last message was sent " + timeStamp + " ago"
                       }
-                    }};
+                    };
     return embed;
 };
 
