@@ -122,7 +122,7 @@ const getTimeFromMiliseconds = function(ms) {
         minuteText = minutes + minuteText;
     }
     if (totalSeconds > 0) {
-        const seconds = Math.floor(totalSeconds);
+        const seconds = Math.floor(totalSeconds%60);
         secondText = (seconds === 1) ? " Second" : " Seconds";
         secondText = seconds + secondText;
     }
