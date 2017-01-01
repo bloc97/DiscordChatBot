@@ -1,6 +1,6 @@
-const EventHandler = require("./EventHandler.js");
 const utils = require("./utils.js");
 const fs = require("fs");
+const NULL = utils.NULL;
 
 
 class ModuleHandler {
@@ -12,6 +12,19 @@ class ModuleHandler {
     }
     initData(datafile) {
         this.dataHandler.init(datafile);
+    }
+    registerAll(path) {
+        const moduleFiles = fs.readdirSync(path);
+        for (let i=0; i<moduleFiles.length; i++) {
+            const Module = require("./modules/"+moduleFiles[i]);
+            this.register(new Module(this.isDebug));
+        }
+    }
+    loadAll() {
+        for (let i=0; i<this.data.module.length; i++) {
+            this.load(this.data.module[i]);
+        }
+        this.sort();
     }
     register(module) { //registers the module
         this.data.module.push(module); //pushes the module object into the array, so it can be accessed through iteration
@@ -69,7 +82,7 @@ class ModuleHandler {
     }
     send(eventpacket) { //sends the eventpacket and infopacket to all modules
         this.dataHandler.smartSave();
-        let infopacket = new EventHandler.InfoPacket();
+        let infopacket = new InfoPacket();
         
         for (var i=0, j=this.data.loaded.length; i<j; i++){
             
@@ -147,6 +160,50 @@ class ModuleData {
                 return -1;
             }
         }
+    }
+}
+
+
+class InfoPacket {
+    constructor() {
+        this.output = new OutputData();
+        this.isHalted = false;
+        this.doJump = false;
+        this.doSave = false;
+        this.doTerminate = false;
+        this.jumpID = 0;
+    }
+    halt() {
+        this.isHalted = true;
+    }
+    jump(uid) {
+        this.doJump = true;
+        this.jumpUid = uid;
+    }
+    save() {
+        this.doSave = true;
+    }
+    exit() {
+        this.doTerminate = true;
+    }
+}
+
+class OutputData {
+    constructor() {
+        this.message = [[],[],[],[]]; //[message, delay (ms), mode of speech, user]
+        this.action = [[],[],[],[]];
+    }
+    addMessage(msg, delay, mode, user) {
+        this.message[0].push(msg||"...");
+        this.message[1].push(+delay||0);
+        this.message[2].push(mode||2);
+        this.message[3].push(user||NULL);
+    }
+    addAction(action, delay, info, user) {
+        this.action[0].push(action||false);
+        this.action[1].push(+delay||0);
+        this.action[2].push(info||NULL);
+        this.action[3].push(user||NULL);
     }
 }
 

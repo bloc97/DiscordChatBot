@@ -9,7 +9,7 @@ class CommandProc {
         this.desc = "Command Processor";
         this.refname = "CommandProc";
         this.id = 100, //ID used to load modules in order
-        this.uid = "comp1000";
+        this.uid = "comp1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
     }
     main(eventpacket, infopacket, data) {
@@ -25,6 +25,8 @@ class CommandProc {
         const tokens = this.tokenise(msgParsed);
         
         infopacket.command = {};
+        infopacket.command.strength = eventpacket.strength + hasSymbol;
+        infopacket.command.text = msg;
         infopacket.command.symbol = symbol;
         infopacket.command.verb = tokens[0];
         infopacket.command.args = tokens.slice(1, tokens.length);

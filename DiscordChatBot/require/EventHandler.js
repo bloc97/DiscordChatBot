@@ -3,11 +3,12 @@ const NULL = utils.NULL;
 
 class EventPacket {
     
-    constructor(api, type, event, client) {
+    constructor(api, type, event, botClient) {
         this.api = api;
         this.type = type;
         this.event = event;
-        
+        this.bot = botClient;
+
         if (this.api === "sinusbot") {
             this.rawmsg = event.msg||NULL;
             this.msg = event.msg.toLowerCase()||NULL;
@@ -20,7 +21,7 @@ class EventPacket {
             //that.isBotCalled = (AI.Core.compare(that.msg,that.botName)||that.mode<=1);
         } else if (this.api === "discord.js") {
             if (this.type === "ready") {
-                this.msg = "";
+                this.strength = -1;
             } else if (this.type === "message") {
                 switch (event.channel.type) {
                 case "dm":
@@ -42,14 +43,12 @@ class EventPacket {
                 this.user = event.author; //discord.js User Class
                 this.userId = event.author.id;
                 this.userName = event.author.username;
-
-                this.bot = client;
-                this.botUser = client.user;
-                this.botId = client.user.id;
-                this.botName = client.user.username;
+                
+                this.botUser = botClient.user;
+                this.botId = botClient.user.id;
+                this.botName = botClient.user.username;
                 this.botNick = utils.getNick(this.botName);
-
-
+                
                 this.rawmsg = event.content||NULL;
 
                 const botMention = "<@" + this.botId + ">";
@@ -65,8 +64,6 @@ class EventPacket {
                 this.msg = msgWithoutBotNick.toLowerCase();
             }
             
-            
-            
         }
     }
 }
@@ -80,57 +77,20 @@ function removeMention(msg, botMention) { //removes the bot mention from the msg
     }
     return utils.clearWhitespaces(newmsg);
 }
-function removeBotNick(msgWithoutMention, botNick) { //removes the bot nickname from the msg
+function removeBotNick(msgWithoutMention, botNick) { //removes the bot nickname from the msg, and ",;" too.
     let msgParsed = msgWithoutMention;
     if (msgWithoutMention.toLowerCase().indexOf(botNick) === 0) {
         msgParsed = msgWithoutMention.slice(botNick.length, msgWithoutMention.length);
     }
+    msgParsed = utils.clearWhitespaces(msgParsed);
+    
+    const char0 = msgParsed.charAt(0);
+    if (char0 === "," || char0 === ";") {
+        msgParsed = msgParsed.slice(1, msgParsed.length); //If there's a comma or semicolon, remove it.
+    }
     return utils.clearWhitespaces(msgParsed);
 }
 
-class InfoPacket {
-    constructor() {
-        this.output = new OutputData();
-        this.isHalted = false;
-        this.doJump = false;
-        this.doSave = false;
-        this.doTerminate = false;
-        this.jumpID = 0;
-    }
-    halt() {
-        this.isHalted = true;
-    }
-    jump(uid) {
-        this.doJump = true;
-        this.jumpUid = uid;
-    }
-    save() {
-        this.doSave = true;
-    }
-    exit() {
-        this.doTerminate = true;
-    }
-}
-
-class OutputData {
-    constructor() {
-        this.message = [[],[],[],[]]; //[message, delay (ms), mode of speech, user]
-        this.action = [[],[],[],[]];
-    }
-    addMessage(msg, delay, mode, user) {
-        this.message[0].push(msg||"...");
-        this.message[1].push(+delay||0);
-        this.message[2].push(mode||2);
-        this.message[3].push(user||NULL);
-    }
-    addAction(action, delay, info, user) {
-        this.action[0].push(action||false);
-        this.action[1].push(+delay||0);
-        this.action[2].push(info||NULL);
-        this.action[3].push(user||NULL);
-    }
-}
 
 
 exports.EventPacket = EventPacket;
-exports.InfoPacket = InfoPacket;

@@ -32,6 +32,9 @@ const clearWhitespaces = function(msg) { //removes the beginning whitespaces
             break;
         }
     }
+    if (startindex === 0) {
+        return msg;
+    }
     return msg.slice(startindex, msg.length);
 };
 const findNextChar = function(msg, char, startindex) {
@@ -61,6 +64,29 @@ const getTimeStamp = function() {
     return "[" + hours + ":" + minutes + ":" + seconds + "] ";
 };
 
+const getSizeStamp = function(bytes) {
+    if (bytes > 5000000) {
+        return getDecimalPrecision(bytes/1000000, 2) + " MB";
+    } else if (bytes > 5000) {
+        return getDecimalPrecision(bytes/1000, 2) + " KB";
+    } else {
+        return getDecimalPrecision(bytes) + " B";
+    }
+};
+
+const getDecimalPrecision = function(value, prec) {
+    let newval = value*(Math.pow(10, prec));
+    newval = Math.round(newval);
+    newval = newval/(Math.pow(10, prec));
+    newstr = newval + "";
+    dotIndex = findNextChar(newstr, ".", 0);
+    if (prec === 0) {
+        return newstr.substring(0, dotIndex);
+    } else {
+        return newstr.substring(0, dotIndex+prec+1);
+    }
+};
+
 exports.NULL = NULL;
 exports.compare = compare;
 exports.contains = contains;
@@ -69,3 +95,4 @@ exports.getNick = getNick;
 exports.clearWhitespaces = clearWhitespaces;
 exports.findNextChar = findNextChar;
 exports.getTimeStamp = getTimeStamp;
+exports.getSizeStamp = getSizeStamp;
