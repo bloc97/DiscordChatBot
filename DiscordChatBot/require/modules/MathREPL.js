@@ -86,6 +86,10 @@ class MathRepl { //This is an module that adds some essential commands to the se
             this.consoleBox.delete().then().catch(err => {});
             this.isConsoleActive = false;
             this.consoleStr = "";
+            this.currentScope = {};
+            ev.delete().then().catch(err => {});
+        } else if (args[0] === "purge" && this.isConsoleActive) {
+            this.currentScope = {};
             ev.delete().then().catch(err => {});
         }
         
