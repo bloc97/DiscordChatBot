@@ -6,9 +6,9 @@ const EventHandler = require("./require/EventHandler.js");
 //Parses the config file
 let configFile;
 try {
-    configFile = fs.readFileSync("DiscordJS.config");
+    configFile = fs.readFileSync("self_DiscordJS.config");
 } catch (err) {
-    console.log("Error, could not find DiscordJS.config.");
+    utils.logErr("Error, could not find self_DiscordJS.config.");
     process.exit();
 }
 const config = JSON.parse(configFile);
@@ -16,7 +16,7 @@ const token = config.token;
 const debug = config.debug;
 const api = "discord.js";
 
-//Initialises ARIMA Engine
+//Initialises the Logic
 const botAI = new AI(api, debug);
 botAI.moduleHandler.registerAll("./require/modules/");
 
@@ -25,11 +25,11 @@ const Discord = require('discord.js');
 const discordbot = new Discord.Client();
 
 discordbot.on("ready", function() {
-    console.log(utils.getTimeStamp() + "Connected.");
+    utils.logDone("Connected.");
     botAI.moduleHandler.loadAll();
     botAI.moduleHandler.initData("./data_" + discordbot.user.id + ".json");
-    console.log(utils.getTimeStamp() + "ARIMA Bot started up succesfully!"); //ARtificially-Intelligent Modular Assistant
-    console.log(utils.getTimeStamp() + "Attched to user " + discordbot.user.id + " with the name " + discordbot.user.username + ".");
+    utils.logDone("Self-Bot started up succesfully!");
+    utils.logInfo("Attched to user " + discordbot.user.id + " with the name " + discordbot.user.username + ".");
 });
 
 discordbot.on("message", function(ev) {
@@ -40,4 +40,4 @@ discordbot.on("message", function(ev) {
 });
 
 discordbot.login(token).then().catch(err => console.error(err));
-console.log(utils.getTimeStamp() + "Connecting to discord...");
+utils.log("Connecting to discord...");
