@@ -65,8 +65,13 @@ class NodeRepl { //This is an module that adds some essential commands to the se
             this.consoleChannel = ev.channel;
             
             const me = this;
+            global.bot = eventpacket.bot;
+            global.channel = eventpacket.event.channel;
             global.print = function(x) {
                 me.consoleStr = me.consoleStr + x + "\n> ";
+            };
+            global.sendMsg = function(x) {
+                ev.channel.sendMessage("\u200b" + x);
             };
             
             

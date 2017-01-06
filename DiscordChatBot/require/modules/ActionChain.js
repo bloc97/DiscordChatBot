@@ -100,10 +100,10 @@ class Chain {
         });
         return this;
     }
-    fetchImageUrl(x, fx, fx2) {
+    fetchImageUrl(x, fx) {
         const me = this;
         Jimp.read(x, function(err, image) {eval(
-            `image.greyscale().getBuffer(Jimp.MIME_PNG, function(err, buffer) {
+            `image ${fx} .getBuffer(Jimp.MIME_PNG, function(err, buffer) {
                 me.file = buffer;
                 me.out();
             });`);
@@ -114,6 +114,7 @@ class Chain {
         });
         return this;
     }
+    
     fetchUserId(x) {
         const id = x.replace(/[^0-9]/gi, "");
         console.log(id);

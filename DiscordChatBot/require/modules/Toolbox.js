@@ -98,7 +98,7 @@ class Toolbox { //This is an module that adds some essential commands to the sel
                     
                     
             }).then().catch(err => {console.log(err);});
-        } else if (arg1 && arg1 !== "self" && !isArg1Number) {
+        } else if (arg1 === "all") {
             
         }
     }
@@ -149,6 +149,36 @@ const newSelfPruneEmbed = function(count, myarray, timeStamp, currentBot, curren
                         {
                           name: 'Last message was: ',
                           value: "```"+myarray[lastindex].content+"```",
+                          inline: false
+                        }
+                      ],
+                      timestamp: myarray[lastindex].createdAt,
+                      footer: {
+                        //icon_url: client.user.avatarURL,
+                        text: "Last message was sent " + timeStamp + " ago"
+                      }
+                    };
+    return embed;
+};
+
+const newAllPruneEmbed = function(count, myarray, timeStamp, currentBot, currentEv) {
+    const lastindex = myarray.length - 1;
+    const embed = {
+                      color: 3447003,
+                      author: {
+                        name: currentBot.user.username + "'s Selfbot"
+                      },
+                      title: "*" + currentEv.content + "*",//client.user.username + "'s Selfbot",//"Selfprune last " + (count-1) + " messages?",
+                      description: "Prune **everyone**'s last " + (count-1) + " messages?",
+                      fields: [
+                        {
+                          name: 'Last message was: ',
+                          value: "```"+myarray[lastindex].content+"```"+"By: " + myarray[lastindex].author.username,
+                          inline: false
+                        },
+                        {
+                          name: `Note: You currently do not have the permissions to delete others' messages.`,
+                          value: "",
                           inline: false
                         }
                       ],
