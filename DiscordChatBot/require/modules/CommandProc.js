@@ -20,18 +20,83 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         const symbol = (hasSymbol) ? msg.charAt(0) : "";
         const msgParsed = (hasSymbol) ? msg.slice(1, msg.length) : msg;
         
+        const terms = this.getTerms(msgParsed);
+        const quotes = this.getQuotes(msgParsed);
         const tokens = this.tokenise(msgParsed);
         
         infopacket.command = {};
         infopacket.command.strength = eventpacket.strength + hasSymbol;
         infopacket.command.text = msg;
         infopacket.command.symbol = symbol;
-        infopacket.command.verb = tokens[0];
-        infopacket.command.args = tokens.slice(1, tokens.length);
+        infopacket.command.verb = terms[0];
+        infopacket.command.args = terms.slice(1, tokens.length);
+        infopacket.command.terms = terms;
+        infopacket.command.quotes = quotes;
+        infopacket.command.tokens = tokens;
+        
+//        utils.logInfo(terms);
+//        utils.logInfo(quotes);
+//        utils.logInfo(tokens);
         
     }
+    getTerms(parsedMsg) {
+        let terms = [];
+        
+        let lasti = 0;
+        let isWithinTerm = false;
+        
+        for (let i=0; i<parsedMsg.length; i++) {
+            let currentChar = parsedMsg.charAt(i);
+            
+            if (currentChar === '"' && !isWithinTerm) {
+                i = utils.findNextChar(parsedMsg, '"', i+1);
+                continue;
+            } else if (currentChar === '"' && isWithinTerm) {
+                terms.push(parsedMsg.slice(lasti, i));
+                isWithinTerm = false;
+                i = utils.findNextChar(parsedMsg, '"', i+1);
+                continue;
+            }
+            
+            if (currentChar !== " " && !isWithinTerm) {
+                lasti = i;
+                isWithinTerm = true;
+            } else if (currentChar === " " && isWithinTerm) {
+                terms.push(parsedMsg.slice(lasti, i));
+                isWithinTerm = false;
+            }
+        }
+        if (isWithinTerm) {
+            terms.push(parsedMsg.slice(lasti, parsedMsg.length));
+        }
+        return terms;
+        
+    }
+    getQuotes(parsedMsg) {
+        let quotes = [];
+        
+        let firstQuote = parsedMsg.indexOf('"');
+        
+        if (firstQuote === -1) {
+            return quotes;
+        }
+        
+        for (let i=firstQuote; i<parsedMsg.length; i++) {
+            let currentChar = parsedMsg.charAt(i);
+            
+            if (currentChar === '"') {
+                const endQuote = utils.findNextChar(parsedMsg, '"', i+1);
+                quotes.push(parsedMsg.substring(i+1, endQuote));
+                i = endQuote;
+            }
+        }
+        return quotes;
+    }
+    
     tokenise(parsedMsg) {
-        let token = [];
+        //takes a string, separates all the spaces, and the quotes
+        
+        let tokens = [];
         
         let lasti = 0;
         let isWithinToken = false;
@@ -41,12 +106,12 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
             let currentChar = parsedMsg.charAt(i);
             
             if (currentChar === '"' && isWithinQuote) {
-                token.push(parsedMsg.slice(lasti, i));
+                tokens.push(parsedMsg.slice(lasti, i));
                 isWithinToken = false;
                 isWithinQuote = false;
                 continue;
             } else if (currentChar === '"' && isWithinToken) {
-                token.push(parsedMsg.slice(lasti, i));
+                tokens.push(parsedMsg.slice(lasti, i));
                 lasti = i+1;
                 isWithinToken = true;
                 isWithinQuote = true;
@@ -59,7 +124,7 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
             }
             
             if (currentChar === " " && isWithinToken && !isWithinQuote) {
-                token.push(parsedMsg.slice(lasti, i));
+                tokens.push(parsedMsg.slice(lasti, i));
                 isWithinToken = false;
             } else if (currentChar !== " " && !isWithinToken && !isWithinQuote) {
                 lasti = i;
@@ -67,9 +132,9 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
             }
         }
         if (isWithinToken) {
-            token.push(parsedMsg.slice(lasti, parsedMsg.length));
+            tokens.push(parsedMsg.slice(lasti, parsedMsg.length));
         }
-        return token;
+        return tokens;
         
     }
 }

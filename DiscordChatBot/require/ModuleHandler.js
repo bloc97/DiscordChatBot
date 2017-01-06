@@ -24,7 +24,7 @@ class ModuleHandler {
             } catch (err) {
                 if (this.isDebug){
                     utils.logErr("ModuleHandler: ERROR in Module '" + moduleFiles[i] + "' " + err);
-                    utils.logWarn("ModuleHandler: WARNING Skipping file '" + moduleFiles[i] + "'");
+                    utils.logWarn("ModuleHandler: WARNING! Skipping file '" + moduleFiles[i] + "'");
                 }
             }
         }
