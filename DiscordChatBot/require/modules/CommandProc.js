@@ -1,4 +1,5 @@
 const utils = require("../utils.js");
+const NULL = utils.NULL;
 
 class CommandProc { //This module parses raw text into commands. It tokenises the text, and supports quote parsing
     
@@ -11,7 +12,7 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         this.isDebug = debug||false;
     }
     main(eventpacket, infopacket, data) {
-        if (eventpacket.type !== "message") {
+        if (eventpacket.type !== "message" || eventpacket.isSelf) {
             return;
         }
         
@@ -23,6 +24,7 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         const terms = this.getTerms(msgParsed);
         const quotes = this.getQuotes(msgParsed);
         const tokens = this.tokenise(msgParsed);
+        const options = this.getOptions(msgParsed);
         
         infopacket.command = {};
         infopacket.command.strength = eventpacket.strength + hasSymbol;
@@ -33,19 +35,53 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         infopacket.command.terms = terms;
         infopacket.command.quotes = quotes;
         infopacket.command.tokens = tokens;
+        infopacket.command.options = options;
         
 //        utils.logInfo(terms);
 //        utils.logInfo(quotes);
 //        utils.logInfo(tokens);
+//        console.log(options);
         
+    }
+    getOptions(parsedMsg) {
+        let options = {};
+        if (parsedMsg.indexOf("--") === -1) {
+            return options;
+        }
+        let lasti = 0;
+        let i = 0;
+        while(i < parsedMsg.length && i > -1) {
+            lasti = parsedMsg.indexOf("--", i);
+            let startWordi = lasti + 2;
+            let endWordi = parsedMsg.indexOf(" ", startWordi);
+            endWordi = (endWordi > -1) ? endWordi :  parsedMsg.length; //if next space doesn't exist
+            let word = parsedMsg.substring(startWordi, endWordi);
+            i = parsedMsg.indexOf("--", endWordi);
+            if (i > -1) { //if next "--" doesn't exist
+                let statement = parsedMsg.substring(endWordi, i);
+                statement = utils.clearWhitespaces(statement);
+                statement = utils.clearEndWhitespaces(statement);
+                options[word] = statement||NULL;
+            } else {
+                let statement = parsedMsg.substring(endWordi, parsedMsg.length);
+                statement = utils.clearWhitespaces(statement);
+                statement = utils.clearEndWhitespaces(statement);
+                options[word] = statement||NULL;
+            }
+            
+        }
+        //console.log(options);
+        return options;
     }
     getTerms(parsedMsg) {
         let terms = [];
         
         let lasti = 0;
         let isWithinTerm = false;
+        let optionsi = parsedMsg.indexOf("--");
+        let endi = (optionsi > -1) ? optionsi : parsedMsg.length;
         
-        for (let i=0; i<parsedMsg.length; i++) {
+        for (let i=0; i<endi; i++) {
             let currentChar = parsedMsg.charAt(i);
             
             if (currentChar === '"' && !isWithinTerm) {
@@ -66,8 +102,8 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
                 isWithinTerm = false;
             }
         }
-        if (isWithinTerm) {
-            terms.push(parsedMsg.slice(lasti, parsedMsg.length));
+        if (isWithinTerm) { //if not within term and loop ended, slice up to "--"
+            terms.push(parsedMsg.slice(lasti, endi));
         }
         return terms;
         
@@ -80,19 +116,21 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         if (firstQuote === -1) {
             return quotes;
         }
+        let optionsi = parsedMsg.indexOf("--");
+        let endi = (optionsi > -1) ? optionsi : parsedMsg.length;
         
-        for (let i=firstQuote; i<parsedMsg.length; i++) {
+        for (let i=firstQuote; i<endi; i++) {
             let currentChar = parsedMsg.charAt(i);
             
             if (currentChar === '"') {
-                const endQuote = utils.findNextChar(parsedMsg, '"', i+1);
-                quotes.push(parsedMsg.substring(i+1, endQuote));
+                let endQuote = utils.findNextChar(parsedMsg, '"', i+1);
+                if (endQuote < 0 || endQuote > endi) endQuote = endi; //if quote end is beyond "--" or doesn't exist, slice up to "--"
+                quotes.push(parsedMsg.slice(i+1, endQuote));
                 i = endQuote;
             }
         }
         return quotes;
     }
-    
     tokenise(parsedMsg) {
         //takes a string, separates all the spaces, and the quotes
         

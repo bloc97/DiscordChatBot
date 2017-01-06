@@ -37,6 +37,19 @@ const clearWhitespaces = function(msg) { //removes the beginning whitespaces
     }
     return msg.slice(startindex, msg.length);
 };
+const clearEndWhitespaces = function(msg) { //removes the beginning whitespaces
+    let endindex = msg.length-1;
+    for (let i=endindex; i>=0; i--) {
+        if (msg.charAt(i) !== " ") {
+            endindex = i+1;
+            break;
+        }
+    }
+    if (endindex === msg.length) {
+        return msg;
+    }
+    return msg.slice(0, endindex);
+};
 const findNextChar = function(msg, char, startindex) {
     for (let i=startindex; i<msg.length; i++) {
         if (msg.charAt(i) === char) {
@@ -163,6 +176,7 @@ exports.contains = contains;
 exports.isLetter = isLetter;
 exports.getNick = getNick;
 exports.clearWhitespaces = clearWhitespaces;
+exports.clearEndWhitespaces = clearEndWhitespaces;
 exports.findNextChar = findNextChar;
 exports.getTimeStamp = getTimeStamp;
 exports.getSizeStamp = getSizeStamp;

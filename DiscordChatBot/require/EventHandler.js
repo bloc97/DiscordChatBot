@@ -33,6 +33,8 @@ class EventPacket {
                 default :
                     this.mode = 0;
                 }
+                this.isMessage = true;
+                
                 this.serverId = (this.mode === 0) ? event.guild.id : NULL;
                 this.channelId = event.channel.id;
                 this.eventId = event.id;

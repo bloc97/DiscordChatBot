@@ -24,7 +24,7 @@ class Toolbox { //This is an module that adds some essential commands to the sel
         
     }
     main(eventpacket, infopacket, data) {
-        if (eventpacket.botId !== eventpacket.userId || eventpacket.type !== "message") {
+        if (eventpacket.type !== "message" || eventpacket.isSelf) {
             return;
         }
         const symbol = infopacket.command.symbol;
@@ -99,7 +99,27 @@ class Toolbox { //This is an module that adds some essential commands to the sel
                     
             }).then().catch(err => {console.log(err);});
         } else if (arg1 === "all") {
-            
+            self.currentChannel.fetchMessages({limit:100})
+                .then(messages => {
+                    let array = messages.array();
+                    const myarray = array;
+                    let count = Math.min(number+1, myarray.length);
+                    
+                    myarray.length = count;
+                    let lastindex = myarray.length-1;
+                    
+                    self.pruneMsgs = myarray;
+                    
+                    const lastdate = myarray[lastindex].createdAt.valueOf();
+                    const currentdate = new Date().valueOf();
+                    const diff = currentdate-lastdate;
+                    
+                    const timeStamp = utils.getTimeFromMiliseconds(diff);
+                    const selfPruneEmbed = newSelfPruneEmbed(count, myarray, timeStamp, self.currentBot, self.currentEv);
+                    this.currentEv.edit("", {embed: selfPruneEmbed}).then().catch(err => {});
+                    
+                    
+            }).then().catch(err => {console.log(err);});
         }
     }
     runPrune() {

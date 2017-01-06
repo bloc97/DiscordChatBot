@@ -13,7 +13,7 @@ class DebugTools { //Debug tools module
         
     }
     main(eventpacket, infopacket, data) {
-        if (eventpacket.botId !== eventpacket.userId || eventpacket.type !== "message") {
+        if (eventpacket.type !== "message" || eventpacket.isSelf) {
             return;
         }
         const symbol = infopacket.command.symbol;

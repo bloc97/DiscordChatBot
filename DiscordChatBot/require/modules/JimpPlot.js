@@ -2,6 +2,34 @@ const utils = require("../utils.js");
 const mathjs = require("mathjs");
 const Jimp = require('jimp');
 
+const help = "```" + 
+`Plot Module Help
+   /plot <function> [-switches]
+   /plot <function> [--options <args>]
+   /plot --function <function> [--options <args>]
+
+Switches:
+   -d              - Plots the derivative of the function.
+   -i              - Plots the definite integral from 0 to inf.
+
+Options:
+   --function      - Chooses a function to plot.
+      <function>     function to plot
+            
+   --derivative    - Plots the derivative of the function.
+   
+   --integral      - Plots the definite integral from 0 to inf.
+   
+   --zoom          - Zooms/Unzooms the graph.
+      <number>       positive real number (default: 100)
+            
+   --precision     - Chooses what pixel precision to plot at.
+      <px>           integer (default: 2)
+   
+   --size          - Chooses the size of the canvas in pixels.
+      <px>           integer (default: 1024)`
++ "```";
+
 class JimpPlot { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
@@ -19,149 +47,81 @@ class JimpPlot { //This is an module that adds some essential commands to the se
         
     }
     main(eventpacket, infopacket, data) {
-        if (eventpacket.botId !== eventpacket.userId || eventpacket.type !== "message") {
+        if (eventpacket.type !== "message" || eventpacket.strength < 1 || eventpacket.isSelf) {
             return;
         }
         const symbol = infopacket.command.symbol;
         const command = infopacket.command.verb;
         const args = infopacket.command.args;
+        const tokens = infopacket.command.tokens;
+        const options = infopacket.command.options;
+        
         const ev = eventpacket.event;
         const channel = eventpacket.event.channel;
         
-        const firstChar = ev.content.charAt(0);
-        const lastChar = ev.content.charAt(ev.content.length-1);
-        
-        
-        if (symbol !== "/"){// || command !== "plot") {
+        if (command !== "plot") {
             return;
         }
-        if (args[0] && command === "plotfx") {
-            const plotObj = new plotObject(args[0], args[1]);
-            plotObj.plotx();
-            plotObj.send(channel);
+        
+        if (args[0] === "help" || !tokens[1]) {
+            if (eventpacket.mode < 2) {
+                ev.author.sendMessage(help);
+            } else {
+                channel.sendMessage(help);
+            }
+            return;
         }
-        if (args[0] && command === "plotdx") {
-            const plotObj = new plotObject(args[0], args[1]);
-            plotObj.plotdx();
+        
+        const fn = options.function || tokens[1];
+        const plotObj = new plotObject(fn, options.zoom, options.precision, options.size);
+        
+        try {
+            if (options.derivative || tokens.indexOf("-d") !== -1) {
+                plotObj.plotdx();
+            } else if (options.integral || tokens.indexOf("-i") !== -1) {
+                plotObj.plotix();
+            } else {
+                plotObj.plotx();
+            }
             plotObj.send(channel);
+            
+        } catch (err) {
+            channel.sendMessage("" + err).then().catch(err => {});
         }
-//        if (args[0] && command === "plotix") {
-//            const plotObj = new plotObject(args[0], args[1]);
-//            plotObj.plotix();
-//            plotObj.send(channel);
+        
+        
+//
+//        
+//        if (tokens[1] && command === "plotfx") {
+//            const plotObj = new plotObject(tokens[1], tokens[2]);
+//            try {
+//                plotObj.send(channel);
+//            } catch (err) {
+//                channel.sendMessage("" + err).then().catch(err => {});
+//            }
+//        }
+//        if (tokens[1] && command === "plotdx") {
+//            const plotObj = new plotObject(tokens[1], tokens[2]);
+//            try {
+//                plotObj.plotdx();
+//                plotObj.send(channel);
+//            } catch (err) {
+//                channel.sendMessage("" + err).then().catch(err => {});
+//            }
 //        }
         
         
     }
-//    
-//    plot2(fx, fx2, zoom, step, channel){
-//        let size = 1024;
-//        const xsize = size;
-//        const ysize = size;
-//        zoom = +zoom || 100; //zoom is (how many number of pixels) === 1;
-//        //step = +step;
-//        const pixelPrecision = 2; //how many pixels before drawing next line
-//        step = pixelPrecision/zoom;
-//        let scope = {};
-//
-//        let endx = xsize/(2*zoom);
-//        let startx = -endx;
-//
-//        const backcolour = Jimp.rgbaToInt(255,255,255,255);
-//        const axiscolour = Jimp.rgbaToInt(0,0,255,255);
-//        const textcolour = Jimp.rgbaToInt(0,255,0,255);
-//        //const colour = Jimp.rgbaToInt(0,0,0,255);
-//        let image = new Jimp(xsize,ysize, backcolour);
-//
-//        const xmiddle = xsize/2;
-//        const ymiddle = ysize/2;
-//
-//        for (let i=0; i<xsize; i++) {
-//            image.setPixelColor(axiscolour, i, ymiddle-1);
-//            image.setPixelColor(axiscolour, i, ymiddle);
-//            image.setPixelColor(axiscolour, i, ymiddle+1);
-//        }
-//        for (let i=0; i<ysize; i++) {
-//            image.setPixelColor(axiscolour, xmiddle-1, i);
-//            image.setPixelColor(axiscolour, xmiddle, i);
-//            image.setPixelColor(axiscolour, xmiddle+1, i);
-//        }
-//        const axisUnitHalfWidth = 1/64;
-//        const yAxisHalfWidth = xsize*axisUnitHalfWidth;
-//        const xAxisHalfWidth = ysize*axisUnitHalfWidth;
-//
-//        let axe = zoom;
-//        let num = 1;
-//        let xquarter = xsize/4;
-//        let x32 = xsize/32;
-//
-//        while (axe < x32) {
-//            axe = axe*10;
-//            num = num*10;
-//        }
-//        while (axe > xquarter) {
-//            axe = axe/10;
-//            num = num/10;
-//        }
-//
-//        const yAxisUnitStart = xmiddle-(yAxisHalfWidth);
-//        const yAxisUnitEnd = xmiddle+(yAxisHalfWidth);
-//        for (let i=yAxisUnitStart; i<yAxisUnitEnd; i++) {
-//            image.setPixelColor(axiscolour, i, ymiddle-axe-1);
-//            image.setPixelColor(axiscolour, i, ymiddle-axe);
-//            image.setPixelColor(axiscolour, i, ymiddle-axe+1);
-//        }
-//        const xAxisUnitStart = ymiddle-(xAxisHalfWidth);
-//        const xAxisUnitEnd = ymiddle+(xAxisHalfWidth);
-//        for (let i=xAxisUnitStart; i<xAxisUnitEnd; i++) {
-//            image.setPixelColor(axiscolour, xmiddle+axe-1, i);
-//            image.setPixelColor(axiscolour, xmiddle+axe, i);
-//            image.setPixelColor(axiscolour, xmiddle+axe+1, i);
-//        }
-//
-//        for (let i=startx; i<endx; i+=step) {
-//            let x = i;
-//            mathjs.eval("x="+i, scope);
-//            let y = mathjs.eval(fx, scope);
-//            mathjs.eval("x="+(i+step), scope);
-//            let y2 = mathjs.eval(fx, scope);
-//            XiaolinWu.plot((x*zoom)+xmiddle, (-y*zoom)+ymiddle, ((x+step)*zoom)+xmiddle, (-y2*zoom)+ymiddle, image);
-//            //image.setPixelColor(colour, i/0.2+xsize/2, -x(i)/0.2+ysize/2);
-//        }
-//
-//        for (let i=startx; i<endx; i+=step) {
-//            let x = i;
-//            mathjs.eval("x="+i, scope);
-//            let y = mathjs.eval(fx2, scope);
-//            mathjs.eval("x="+(i+step), scope);
-//            let y2 = mathjs.eval(fx2, scope);
-//            XiaolinWu.plot((x*zoom)+xmiddle, (-y*zoom)+ymiddle, ((x+step)*zoom)+xmiddle, (-y2*zoom)+ymiddle, image);
-//            //image.setPixelColor(colour, i/0.2+xsize/2, -x(i)/0.2+ysize/2);
-//        }
-//        
-//        const textStartx = xsize/32;
-//        const textStarty = ysize/32;
-//        const textStarty2 = textStarty + 32 + 16;
-//
-//
-//        Jimp.loadFont(Jimp.FONT_SANS_32_BLACK).then(function (font) {
-//            image.print(font, textStartx, textStarty, ("f(x) = " + fx + " g(x) = " + fx2)).print(font, textStartx, textStarty2, ("scale: " + num))
-//                .getBuffer(Jimp.MIME_PNG, function(err, data) {
-//                    channel.sendFile(data);
-//                });
-//        });
-//    };
-
 }
 
 class plotObject {
-    constructor(fx, zoom) {
-        const size = 1024;
+    constructor(fx, zoom, precision, customSize) {
+        const size = +customSize||1024;
         const xsize = size;
         const ysize = size;
         zoom = +zoom || 100; //zoom is (how many number of pixels) === 1;
         //step = +step;
-        const pixelPrecision = 2; //how many pixels before drawing next line
+        const pixelPrecision = +precision||2; //how many pixels before drawing next line
         const step = pixelPrecision/zoom;
 
         let endx = xsize/(2*zoom);
@@ -173,18 +133,33 @@ class plotObject {
         //const colour = Jimp.rgbaToInt(0,0,0,255);
         let image = new Jimp(xsize,ysize, backcolour);
 
+        //Draw the axes
         const xmiddle = xsize/2;
         const ymiddle = ysize/2;
         for (let i=0; i<xsize; i++) {
-            image.setPixelColor(axiscolour, i, ymiddle-1);
             image.setPixelColor(axiscolour, i, ymiddle);
-            image.setPixelColor(axiscolour, i, ymiddle+1);
+            if (size > 512) {
+                image.setPixelColor(axiscolour, i, ymiddle-1);
+                image.setPixelColor(axiscolour, i, ymiddle+1);
+            }
+            if (size > 1536) {
+                image.setPixelColor(axiscolour, i, ymiddle-2);
+                image.setPixelColor(axiscolour, i, ymiddle+2);
+            }
         }
         for (let i=0; i<ysize; i++) {
-            image.setPixelColor(axiscolour, xmiddle-1, i);
             image.setPixelColor(axiscolour, xmiddle, i);
-            image.setPixelColor(axiscolour, xmiddle+1, i);
+            if (size > 512) {
+                image.setPixelColor(axiscolour, xmiddle-1, i);
+                image.setPixelColor(axiscolour, xmiddle+1, i);
+            }
+            if (size > 1536) {
+                image.setPixelColor(axiscolour, xmiddle-2, i);
+                image.setPixelColor(axiscolour, xmiddle+2, i);
+            }
         }
+        
+        //Scale the axis
         const axisUnitHalfWidth = 1/64;
         const yAxisHalfWidth = xsize*axisUnitHalfWidth;
         const xAxisHalfWidth = ysize*axisUnitHalfWidth;
@@ -202,22 +177,36 @@ class plotObject {
             axe = axe/10;
             num = num/10;
         }
-
+        
+        //Draw the axis scales
         const yAxisUnitStart = xmiddle-(yAxisHalfWidth);
         const yAxisUnitEnd = xmiddle+(yAxisHalfWidth);
         for (let i=yAxisUnitStart; i<yAxisUnitEnd; i++) {
-            image.setPixelColor(axiscolour, i, ymiddle-axe-1);
             image.setPixelColor(axiscolour, i, ymiddle-axe);
-            image.setPixelColor(axiscolour, i, ymiddle-axe+1);
+            if (size > 512) {
+                image.setPixelColor(axiscolour, i, ymiddle-axe-1);
+                image.setPixelColor(axiscolour, i, ymiddle-axe+1);
+            }
+            if (size > 1536) {
+                image.setPixelColor(axiscolour, i, ymiddle-axe-2);
+                image.setPixelColor(axiscolour, i, ymiddle-axe+2);
+            }
         }
         const xAxisUnitStart = ymiddle-(xAxisHalfWidth);
         const xAxisUnitEnd = ymiddle+(xAxisHalfWidth);
         for (let i=xAxisUnitStart; i<xAxisUnitEnd; i++) {
-            image.setPixelColor(axiscolour, xmiddle+axe-1, i);
             image.setPixelColor(axiscolour, xmiddle+axe, i);
-            image.setPixelColor(axiscolour, xmiddle+axe+1, i);
+            if (size > 512) {
+                image.setPixelColor(axiscolour, xmiddle+axe-1, i);
+                image.setPixelColor(axiscolour, xmiddle+axe+1, i);
+            }
+            if (size > 1536) {
+                image.setPixelColor(axiscolour, xmiddle+axe-2, i);
+                image.setPixelColor(axiscolour, xmiddle+axe+2, i);
+            }
         }
         
+        //Save the parameters
         this.xsize = xsize;
         this.ysize = ysize;
         this.image = image;
@@ -244,23 +233,35 @@ class plotObject {
         const ymiddle = this.ymiddle;
         const image = this.image;
         
+        let nexty = false;
+        
         for (let i=startx; i<endx; i+=step) {
         //console.log("plotting " + i + " start " + startx + " end " + endx);
             let x = i;
-            mathjs.eval("x="+i, scope);
-            let y = mathjs.eval(fx, scope);
+            let y;
+            if (nexty) {
+                y = nexty;
+            } else {
+                mathjs.eval("x="+i, scope);
+                y = mathjs.eval(fx, scope);
+            }
             
-            if (y > (ysize/zoom)/2 || y < -(ysize/zoom)/2) {
+//            if (y > (ysize/zoom)/2 || y < -(ysize/zoom)/2) { //too conservative
+//                continue;
+//            }
+            if (y > (ysize/zoom) || y < -(ysize/zoom)) { //less performance, but better plots
                 continue;
             }
             
             let x2 = i+step;
             mathjs.eval("x="+(x2), scope);
             let y2 = mathjs.eval(fx, scope);
+            nexty = y2;
             
             XiaolinWu.plot((x*zoom)+xmiddle, (-y*zoom)+ymiddle, ((x+step)*zoom)+xmiddle, (-y2*zoom)+ymiddle, image);
             
         }
+        this.isPlotx = true;
     }
     plotdx() {
         let scope = {};
@@ -297,17 +298,18 @@ class plotObject {
             let dy = (ys-y)/(xs-x); //slope at x
             let dy2 = (ys2-y2)/(xs2-x2); //slope at x2
             
-            if (dy > (ysize/zoom)/2 || dy < -(ysize/zoom)/2) {
+//            if (dy > (ysize/zoom)/2 || dy < -(ysize/zoom)/2) { //too conservative
+//                continue;
+//            }
+      
+            if (dy > (ysize/zoom) || dy < -(ysize/zoom)) { //less performance, but better plots
                 continue;
             }
             
             XiaolinWu.plot((x*zoom)+xmiddle, (-dy*zoom)+ymiddle, ((x+step)*zoom)+xmiddle, (-dy2*zoom)+ymiddle, image);
             
-            
-            //plots integral
-            
-            //image.setPixelColor(colour, i/0.2+xsize/2, -x(i)/0.2+ysize/2);
         }
+        this.isPlotdx = true;
         
     }
     plotix() {
@@ -324,7 +326,7 @@ class plotObject {
         const image = this.image;
         
         let iy = 0;
-        for (let i=startx; i<endx; i+=step) {
+        for (let i=0; i<endx; i+=step) {
             
             let x = i;
             mathjs.eval("x="+i, scope);
@@ -344,32 +346,8 @@ class plotObject {
             
             XiaolinWu.plot((x*zoom)+xmiddle, (-iy*zoom)+ymiddle, ((x+step)*zoom)+xmiddle, (-iy2*zoom)+ymiddle, image);
             
-            
+            this.isPlotix = true;
         }
-//        
-//        iy = 0;
-//        for (let i=0; i<endx; i+=step) {
-//            
-//            let x = -i;
-//            mathjs.eval("x="+i, scope);
-//            let y = mathjs.eval(fx, scope);
-//            
-//            let x2 = -i-step;
-//            mathjs.eval("x="+(x2), scope);
-//            let y2 = mathjs.eval(fx, scope);
-//            
-//            //plots integral
-//            iy += y*step;
-//            const iy2 = iy + y2*step;
-//            
-//            if (iy > (ysize/zoom)/2 || iy < -(ysize/zoom)/2) {
-//                continue;
-//            }
-//            
-//            XiaolinWu.plot(((x-step)*zoom)+xmiddle, (-iy2*zoom)+ymiddle, (x*zoom)+xmiddle, (-iy*zoom)+ymiddle, image);
-//            
-//            
-//        }
     }
     send(channel) {
         const xsize = this.xsize;
@@ -377,16 +355,66 @@ class plotObject {
         const image = this.image;
         const fx = this.fx;
         const num = this.num;
+        
+        const size = this.xsize;
+        
+        let font;
+        let fontsize;
+        
+        if (size < 384) {
+            font = Jimp.FONT_SANS_8_BLACK;
+            fontsize = 8;
+        } else if (size < 768) {
+            font = Jimp.FONT_SANS_16_BLACK;
+            fontsize = 16;
+        } else if (size < 1536) {
+            font = Jimp.FONT_SANS_32_BLACK;
+            fontsize = 32;
+        } else if (size < 3072) {
+            font = Jimp.FONT_SANS_64_BLACK;
+            fontsize = 64;
+        } else {
+            font = Jimp.FONT_SANS_128_BLACK;
+            fontsize = 128;
+        }
+        
         const textStartx = xsize/32;
         const textStarty = ysize/32;
-        const textStarty2 = textStarty + 32 + 16;
+        const textStarty2 = textStarty + fontsize + fontsize/2;
         
-        Jimp.loadFont(Jimp.FONT_SANS_32_BLACK).then(function (font) {
-            image.print(font, textStartx, textStarty, ("f(x) = " + fx)).print(font, textStartx, textStarty2, ("scale: " + num))
-                .getBuffer(Jimp.MIME_PNG, function(err, data) {
-                    channel.sendFile(data);
-                });
-        });
+        if (this.isPlotx) {
+            
+            Jimp.loadFont(font).then(function (font) {
+                image.print(font, textStartx, textStarty, ("f(x) = " + fx)).print(font, textStartx, textStarty2, ("scale: " + num))
+                    .getBuffer(Jimp.MIME_PNG, function(err, data) {
+                        channel.sendFile(data);
+                    });
+            });
+            
+        } else if (this.isPlotdx) {
+            
+            Jimp.loadFont(font).then(function (font) {
+                image.print(font, textStartx, textStarty, ("Derivative of f(x) = " + fx)).print(font, textStartx, textStarty2, ("scale: " + num))
+                    .getBuffer(Jimp.MIME_PNG, function(err, data) {
+                        channel.sendFile(data);
+                    });
+            });
+            
+        } else if (this.isPlotix) {
+            
+            Jimp.loadFont(font).then(function (font) {
+                image.print(font, textStartx, textStarty, ("Definite Integral of f(x) = " + fx)).print(font, textStartx, textStarty2, ("scale: " + num))
+                    .getBuffer(Jimp.MIME_PNG, function(err, data) {
+                        channel.sendFile(data);
+                    });
+            });
+            
+        }
+        
+        
+        
+        
+        
     }
     
 }
