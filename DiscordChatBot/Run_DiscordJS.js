@@ -6,9 +6,9 @@ const EventHandler = require("./require/EventHandler.js");
 //Parses the config file
 let configFile;
 try {
-    configFile = fs.readFileSync("self_DiscordJS.config");
+    configFile = fs.readFileSync("DiscordJS.config");
 } catch (err) {
-    utils.logErr("Error, could not find self_DiscordJS.config.");
+    utils.logErr("Error, could not find DiscordJS.config.");
     process.exit();
 }
 const config = JSON.parse(configFile);
@@ -28,7 +28,7 @@ discordbot.on("ready", function() {
     utils.logDone("Connected.");
     botAI.moduleHandler.loadAll();
     botAI.moduleHandler.initData("./data_" + discordbot.user.id + ".json");
-    utils.logDone("Self-Bot started up succesfully!");
+    utils.logDone("ARIMA Bot started up succesfully!");
     utils.logInfo("Attched to user " + discordbot.user.id + " with the name " + discordbot.user.username + ".");
 });
 
