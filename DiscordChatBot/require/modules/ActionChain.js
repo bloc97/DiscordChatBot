@@ -6,10 +6,11 @@ class ActChain { //This module allows for chaining commands
     constructor(debug) {
         this.name = "ACCH";
         this.desc = "Action Chaining Module";
-        this.refname = "ActChMod";
+        this.refname = "ActChain";
         this.id = 500, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "acch1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
+        this.isExample = true; //delete this line to enable the module
         //modules are run in order, from the smallest id to the largest id.
         
     }

@@ -5,7 +5,7 @@ class NodeRepl { //This is an module that adds some essential commands to the se
     constructor(debug) {
         this.name = "REPL";
         this.desc = "Node REPL Module";
-        this.refname = "ReplMod";
+        this.refname = "NodeRepl";
         this.id = 600, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "repl1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;

@@ -36,11 +36,13 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         infopacket.command.quotes = quotes;
         infopacket.command.tokens = tokens;
         infopacket.command.options = options;
+        infopacket.command.switches = tokens.filter(function(x) {return (x.charAt(0) === "-") && (x.charAt(1) !== "-");});
         
-//        utils.logInfo(terms);
-//        utils.logInfo(quotes);
-//        utils.logInfo(tokens);
-//        console.log(options);
+        utils.logInfo(terms);
+        utils.logInfo(quotes);
+        utils.logInfo(tokens);
+        console.log(options);
+        utils.logInfo(infopacket.command.switches);
         
     }
     getOptions(parsedMsg) {
@@ -59,11 +61,13 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
             i = parsedMsg.indexOf("--", endWordi);
             if (i > -1) { //if next "--" doesn't exist
                 let statement = parsedMsg.substring(endWordi, i);
+                statement = statement.replace(/-[a-z] |-[a-z]$/gi,"");
                 statement = utils.clearWhitespaces(statement);
                 statement = utils.clearEndWhitespaces(statement);
                 options[word] = statement||NULL;
             } else {
                 let statement = parsedMsg.substring(endWordi, parsedMsg.length);
+                statement = statement.replace(/-[a-z] |-[a-z]$/gi,"");
                 statement = utils.clearWhitespaces(statement);
                 statement = utils.clearEndWhitespaces(statement);
                 options[word] = statement||NULL;

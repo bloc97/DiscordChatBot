@@ -6,7 +6,7 @@ class MathRepl { //This is an module that adds some essential commands to the se
     constructor(debug) {
         this.name = "MREP";
         this.desc = "MathJS REPL Module";
-        this.refname = "MrepMod";
+        this.refname = "MathRepl";
         this.id = 620, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "mrep1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;

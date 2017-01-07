@@ -27,7 +27,9 @@ Options:
       <px>           integer (default: 2)
    
    --size          - Chooses the size of the canvas in pixels.
-      <px>           integer (default: 1024)`
+      <px>           integer (default: 1024)
+
+   --help          - Opens this help page.`
 + "```";
 
 class JimpPlot { //This is an module that adds some essential commands to the selfbot
@@ -63,7 +65,7 @@ class JimpPlot { //This is an module that adds some essential commands to the se
             return;
         }
         
-        if (args[0] === "help" || !tokens[1]) {
+        if (args[0] === "help" || !tokens[1] || options.help) {
             if (eventpacket.mode < 2) {
                 ev.author.sendMessage(help);
             } else {
@@ -88,28 +90,6 @@ class JimpPlot { //This is an module that adds some essential commands to the se
         } catch (err) {
             channel.sendMessage("" + err).then().catch(err => {});
         }
-        
-        
-//
-//        
-//        if (tokens[1] && command === "plotfx") {
-//            const plotObj = new plotObject(tokens[1], tokens[2]);
-//            try {
-//                plotObj.send(channel);
-//            } catch (err) {
-//                channel.sendMessage("" + err).then().catch(err => {});
-//            }
-//        }
-//        if (tokens[1] && command === "plotdx") {
-//            const plotObj = new plotObject(tokens[1], tokens[2]);
-//            try {
-//                plotObj.plotdx();
-//                plotObj.send(channel);
-//            } catch (err) {
-//                channel.sendMessage("" + err).then().catch(err => {});
-//            }
-//        }
-        
         
     }
 }
