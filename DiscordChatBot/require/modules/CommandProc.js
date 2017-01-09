@@ -38,11 +38,11 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         infopacket.command.options = options;
         infopacket.command.switches = tokens.filter(function(x) {return (x.charAt(0) === "-") && (x.charAt(1) !== "-");});
         
-        utils.logInfo(terms);
-        utils.logInfo(quotes);
-        utils.logInfo(tokens);
-        console.log(options);
-        utils.logInfo(infopacket.command.switches);
+//        utils.logInfo(terms);
+//        utils.logInfo(quotes);
+//        utils.logInfo(tokens);
+//        console.log(options);
+//        utils.logInfo(infopacket.command.switches);
         
     }
     getOptions(parsedMsg) {

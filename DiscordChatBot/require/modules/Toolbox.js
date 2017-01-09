@@ -13,7 +13,8 @@ Commands:
    
 Options:
    --help          - Opens the help page for that command.
-      <page>       - [optional] page (default: 1)`
+      <page>       - [optional] page (default: 1)
+                     --help all displays all the pages`
 + "```";
 
 const helpPrune = "```" + 
@@ -32,7 +33,7 @@ Options:
    --name          - Specifies the names of users to prune, overrides switches.
       <names>      - partial name of the users, separated by spaces
 
-Page 1 of 2` + "```";
+Page 1 of 3` + "```";
 
 const helpPrune2 = "```" + 
 `   --amount        - Specifies the amount of last messages to prune, overrides --time
@@ -49,13 +50,8 @@ const helpPrune2 = "```" +
                          --interval 14 10 will prune the last 14 to 10 messages
                          --interval 10 14 will prune the last 14 to 10 messages
 
-Examples:
-   /toolbox prune 10 -s
-   /toolbox prune 26 --id 3246281234 736245326
-   /toolbox prune --name theGuy theOtherGuy --amount 30
-   /toolbox prune --id 3246281234 --time 1 40 --endtime 0 10
+Page 2 of 3` + "```";
 
-Page 2 of 2` + "```";
 const helpPrune3 = "```" + `
    --time          - Starts pruning from the specified number of hours/minutes
       <hours>      - hours ago
@@ -70,7 +66,14 @@ const helpPrune3 = "```" + `
                      this will prune x number of messages from --time
       <amount>     - integer amount
 
+Examples:
+   /toolbox prune 10 -s
+   /toolbox prune 26 --id 3246281234 736245326
+   /toolbox prune --name theGuy theOtherGuy --amount 30
+   /toolbox prune --id 3246281234 --time 1 40 --endtime 0 10
+
 Page 3 of 3` + "```";
+
 class Toolbox { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
@@ -94,21 +97,33 @@ class Toolbox { //This is an module that adds some essential commands to the sel
         const switches = infopacket.command.switches;
         const options = infopacket.command.options;
         
+        const ev = eventpacket.event;
         const channel = eventpacket.event.channel;
         
         if (command !=="toolbox") {
             return;
         }
         if (args[0] === "help" || (!args[0] && options.help) || !args[0]) {
-            channel.sendMessage(helpMain);
+            ev.author.sendMessage(helpMain);
             return;
         }
         if (args[0] === "prune") {
             if ((!options.amount && !options.interval && !options.time && !args[1]) || options.help || args[1] === "help") {
-                if (options.help === "2") {
-                    channel.sendMessage(helpPrune2);
-                } else {
-                    channel.sendMessage(helpPrune);
+                switch (options.help) {
+                    case "2":
+                        ev.author.sendMessage(helpPrune2);
+                        break;
+                    case "3":
+                        ev.author.sendMessage(helpPrune3);
+                        break;
+                    case "all":
+                        ev.author.sendMessage(helpPrune);
+                        ev.author.sendMessage(helpPrune2);
+                        ev.author.sendMessage(helpPrune3);
+                        break;
+                    default:
+                        ev.author.sendMessage(helpPrune);
+                        break;
                 }
                 return;
             }
@@ -132,8 +147,6 @@ class Toolbox { //This is an module that adds some essential commands to the sel
                 ids = options.id||"";
             }
             let names = options.name||"";
-            console.log(ids);
-            console.log(names);
             this.smartPrune(eventpacket.event, ids, names, args[1], options.amount, options.interval, options.time, options.endtime, options.endamount);
             return;
         }
@@ -143,9 +156,15 @@ class Toolbox { //This is an module that adds some essential commands to the sel
         message.delete().then(delMessage => {
             delMessage.channel.fetchMessages({limit:100}).then(messages => {
                 
+
+                let rawArray = messages.array();
+                let idArray = ids.split(" ");
+                let nameArray = names.split(" ");
+                let filterArray = [];
+                filterArray = rawArray.filter(m => userFilter(m, idArray, nameArray));
+                
                 if (interval) {
                     let min, max;
-                    let rawArray = messages.array();
                     let intervalArray = interval.split(" ");
                     if (intervalArray.length > 1) {
                         min = Math.min(...intervalArray)||0;
@@ -154,22 +173,13 @@ class Toolbox { //This is an module that adds some essential commands to the sel
                         min = 0;
                         max = Math.max(...intervalArray)||0;
                     }
-                    let filterArray = [];
-                    let idArray = ids.split(" ");
-                    let nameArray = names.split(" ");
-                    filterArray = rawArray.filter(m => userFilter(m, idArray, nameArray));
                     filterArray.length = Math.min(max, filterArray.length);
                     filterArray = filterArray.reverse();
                     let skip = max-min;
                     filterArray.length = Math.min(skip, filterArray.length);
                     
-                    filterArray = filterArray.reverse(); //reverse for deleting in order
-                    
-                    prune(filterArray);
-                    
                 } else if (amount) {
                     let min, max;
-                    let rawArray = messages.array();
                     let amountArray = amount.split(" ");
                     if (amountArray.length > 1) {
                         min = Math.min(...amountArray)||0;
@@ -178,31 +188,46 @@ class Toolbox { //This is an module that adds some essential commands to the sel
                         min = 0;
                         max = Math.max(...amountArray)||0;
                     }
-                    let filterArray = [];
-                    let idArray = ids.split(" ");
-                    let nameArray = names.split(" ");
-                    filterArray = rawArray.filter(m => userFilter(m, idArray, nameArray));
                     filterArray.length = Math.min(max+min, filterArray.length);
                     filterArray = filterArray.reverse();
                     filterArray.length = Math.min(min, filterArray.length);
                     
-                    filterArray = filterArray.reverse(); //reverse for deleting in order
-                    
-                    prune(filterArray);
-                    
                 } else if (stime) {
                     
+                    let stimeArray = stime.split(" ");
                     
+                    const minstoms = 60*1000;
+                    const hourstoms = 60*60*1000;
                     
+                    let startms = (+stimeArray[0]||0) * hourstoms + (+stimeArray[1]||0) * minstoms;
+                    let endms = 0;
+                    
+                    if (etime) {
+                        let etimeArray = etime.split(" ");
+                        endms =  (+etimeArray[0]||0) * hourstoms + (+etimeArray[1]||0) * minstoms;
+                        
+                    }
+                    filterArray = filterArray.filter(m => timeFilter(m, startms, endms));
+                    if (eamount) {
+                        filterArray = filterArray.reverse();
+                        filterArray.length = filterArray.length - (+eamount||0);
+                    }
+                } else {
+                    filterArray.length = Math.min(num, filterArray.length);
+                    prune(filterArray);
+                    return;
                 }
-//                
-//                
-//                let array = messages.array();
-//                //let filterArray = array.reverse();
-//                filterArray = array.filter(m => m.author.id === id);
-//                let count = Math.min(num||999, filterArray.length);
-//                filterArray.length = count;
-//                self.prune(filterArray);
+                
+                filterArray = filterArray.reverse(); //reverse for deleting in order
+
+                prune(filterArray);
+                
+//              let array = messages.array();
+//              let filterArray = array.reverse();
+//              filterArray = array.filter(m => m.author.id === id);
+//              let count = Math.min(num||999, filterArray.length);
+//              filterArray.length = count;
+//              self.prune(filterArray);
             }).catch(err => {});
                 
                 
@@ -215,22 +240,30 @@ class Toolbox { //This is an module that adds some essential commands to the sel
 
 
 const prune = function(messageArray) {
+    if (messageArray.length < 1) return;
+    
     for (let i=0; i<messageArray.length; i++) {
         messageArray[i].delete().then().catch(err => {});
     }
 };
 
 const userFilter = function(message, idArray, nameArray) {
-    if (idArray.length === 0 && nameArray.length === 0) {
+    if (idArray[0] === "" && nameArray[0] === "") {
         return true;
     }
     if (idArray.length > 0) {
-        console.log(idArray, message.author.id);
         if (idArray.indexOf(message.author.id) !== -1) return true;
     }
     if (nameArray.length > 0) {
-        console.log(nameArray, message.author.username);
         if (arrayPartialSearch(nameArray, message.author.username)) return true;
+    }
+    return false;
+};
+
+const timeFilter = function(message, startms, endms) {
+    const timeDiff = (new Date().value) - message.createdAt.value;
+    if (timeDiff < startms && timeDiff > endms) {
+        return true;
     }
     return false;
 };
