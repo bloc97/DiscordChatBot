@@ -28,7 +28,7 @@ discordbot.on("ready", function() {
     utils.logDone("Connected.");
     botAI.moduleHandler.loadAll();
     botAI.moduleHandler.initData("./data_" + discordbot.user.id + ".json");
-    utils.logDone("ARIMA Bot started up succesfully!");
+    utils.logDone("ARIMA Bot started up succesfully!"); //HAL 9001
     utils.logInfo("Attched to user " + discordbot.user.id + " with the name " + discordbot.user.username + ".");
 });
 

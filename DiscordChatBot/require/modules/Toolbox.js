@@ -64,7 +64,7 @@ const helpPrune3 = "```" + `
 
    --endamount     - [optional] Specifies a end amount for the --time command
                      this will prune x number of messages from --time
-      <amount>     - integer amount
+      <amount>     - integer amounttoolbo
 
 Examples:
    /toolbox prune 10 -s

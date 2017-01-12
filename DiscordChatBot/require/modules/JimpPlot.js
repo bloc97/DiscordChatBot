@@ -122,7 +122,7 @@ class plotObject {
                 image.setPixelColor(axiscolour, i, ymiddle-1);
                 image.setPixelColor(axiscolour, i, ymiddle+1);
             }
-            if (size > 1536) {
+            if (size > 1536) { //Make the lines thicker as the image gets bigger
                 image.setPixelColor(axiscolour, i, ymiddle-2);
                 image.setPixelColor(axiscolour, i, ymiddle+2);
             }
@@ -229,15 +229,15 @@ class plotObject {
 //            if (y > (ysize/zoom)/2 || y < -(ysize/zoom)/2) { //too conservative
 //                continue;
 //            }
-            if (y > (ysize/zoom) || y < -(ysize/zoom)) { //less performance, but better plots
-                continue;
-            }
             
             let x2 = i+step;
             mathjs.eval("x="+(x2), scope);
             let y2 = mathjs.eval(fx, scope);
             nexty = y2;
             
+            if (y > (ysize/zoom) || y < -(ysize/zoom)) { //less performance, but better plots
+                continue;
+            }
             XiaolinWu.plot((x*zoom)+xmiddle, (-y*zoom)+ymiddle, ((x+step)*zoom)+xmiddle, (-y2*zoom)+ymiddle, image);
             
         }
