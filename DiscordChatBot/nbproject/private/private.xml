@@ -3,15 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/DiscordJS.config</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/JimpPlot.js</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/ExampleModule.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/utils.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/MathREPL.js</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/NodeREPL.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/Run_DiscordJS.js</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/ActionChain.js</file>
-            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/Toolbox.js</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/EmptyModule.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/ideas.config</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/Permissions.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/GameModule.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/utils.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/Toolbox.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/ModuleHandler.js</file>
             <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/EventHandler.js</file>
+            <file>file:/C:/Users/bowen/Documents/GitHub/DiscordChatBot/DiscordChatBot/require/modules/DebugTools.js</file>
         </group>
     </open-files>
 </project-private>

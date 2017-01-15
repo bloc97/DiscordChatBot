@@ -106,8 +106,7 @@ class Toolbox { //This is an module that adds some essential commands to the sel
         if (args[0] === "help" || (!args[0] && options.help) || !args[0]) {
             ev.author.sendMessage(helpMain);
             return;
-        }
-        if (args[0] === "prune") {
+        } else if (args[0] === "prune") {
             if ((!options.amount && !options.interval && !options.time && !args[1]) || options.help || args[1] === "help") {
                 switch (options.help) {
                     case "2":
@@ -231,7 +230,14 @@ class Toolbox { //This is an module that adds some essential commands to the sel
             }).catch(err => {});
                 
                 
-        }).catch(err => {});
+        }).catch(err => {
+            
+            //delete self messages on channels without permissions
+            
+            
+            
+            
+        });
         
         
 

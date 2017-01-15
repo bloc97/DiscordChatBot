@@ -76,6 +76,30 @@ class DebugTools { //Debug tools module
                 text: "This message will self-delete in 10 seconds."
               }
             }}).then(message => {message.delete(10000);}).catch(err => {});
+        } else if (args[0] === "testembed") {
+            
+            eventpacket.event.channel.sendMessage("", {embed: {
+              title: '',
+              color: 3447003,
+              fields: [
+                {
+                  name: 'Minigame\u200b',
+                  value: "Connected as " + eventpacket.userName + "```js\nHealth:  45\nShields: 84\nArmour:  4\n`${OFFLINE}`\n`#{WORKING}`\n```",
+                  inline: false
+                },
+                {
+                  name: 'Lobby \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u2003 \u200b',
+                  value: "```\nTest2's turn.\n```\n```\nHey\nHello\nyou have been pwned\n1234567890abcdefghijklmnopqrstuvwxyz123\n```",
+                  inline: true
+                },
+                {
+                  name: '\u200b',
+                  value: "`Test`\n`Test2`\n`1234567890abcdefghijklmn`",
+                  inline: true
+                },
+              ]
+            }}).then().catch(err => {});
+            
         }
     }
 }

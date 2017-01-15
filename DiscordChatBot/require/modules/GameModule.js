@@ -2,11 +2,17 @@ const utils = require("../utils.js");
 const mathjs = require("mathjs");
 
 const helpMain = "```" + 
-`MathREPL Module Help
-   /math <command> <args> 
+`Game Module Help
+   /game <game> [-switches] [--options <args>]
 
-Commands:
-   init            - Starts the REPL console.
+Games:
+   Tic-Tac-Toe (SP/MP)
+   
+   
+   
+Options:   
+   
+   start           - Starts the REPL console.
    
    exit            - Closes the active console.
    kill            - Ends the active console.
@@ -19,19 +25,35 @@ Commands:
       <name>`
 + "```";
 
-class MathRepl { //This is an module that adds some essential commands to the selfbot
+//singleplayer games, can save, load
+//multiplayer based games, one person hosts, and can save/load
+//mmo type game, anyone joins in, logs out at whim, persistent world
+
+//two types of consoles
+//one is where each player has its own console
+//other is where all players use the same console on one channel
+
+
+class GameMod { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
-        this.name = "MREP";
-        this.desc = "MathJS REPL Module";
-        this.refname = "MathRepl";
-        this.id = 720, //use an ID larger than 100 so that CommandProc processes the message before this module
-        this.uid = "mrep1000"; //Unique ID used to save data to file
+        this.name = "GAME";
+        this.desc = "Game Module";
+        this.refname = "GameMod";
+        this.id = 950, //use an ID larger than 100 so that CommandProc processes the message before this module
+        this.uid = "game1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
+        this.isExample = true; //delete this line to enable the module
         //modules are run in order, from the smallest id to the largest id.
         
-        this.activeConsoles = {};
-        this.savedConsoles = {};
+        this.selfClients = {}; //selfClients[userId] to get client
+        this.sharedClients = {}; //sharedClients[channelId] to get client
+        
+        this.roomIds = [];
+        
+        this.spGames = {}; //spGames[roomId] to get game
+        this.mpGames = {};
+        this.moGames = {};
         
     }
     main(eventpacket, infopacket, data) {
@@ -62,11 +84,6 @@ class MathRepl { //This is an module that adds some essential commands to the se
             this.activeConsoles[userId] = console;
             
             return;
-        } else if (["terminate","kill","logexit"].indexOf(args[0]) !== -1 && userConsole) {
-            userConsole.endRepl();
-            ev.delete().then().catch(err => {});
-            this.activeConsoles[userId] = false;
-            
         } else if (["close","end","exit"].indexOf(args[0]) !== -1 && userConsole) {
             userConsole.destroy();
             ev.delete().then().catch(err => {});
@@ -75,55 +92,6 @@ class MathRepl { //This is an module that adds some essential commands to the se
         } else if (["refresh","reload"].indexOf(args[0]) !== -1 && userConsole) {
             userConsole.registerCommand(ev);
             userConsole.refresh(ev);
-        } else if (["clear","cls"].indexOf(args[0]) !== -1 && userConsole) {
-            userConsole.registerCommand(ev);
-            userConsole.clear(ev);
-        } else if (args[0] === "save" && userConsole) { //save command
-            userConsole.registerCommand(ev); //deletes message and moves console if necessary
-            if (args[1] && args[1] !== "list") { //if there's a name and its not "list"
-                let sConsoles = this.savedConsoles[userId];
-
-                if (!sConsoles) {
-                    this.savedConsoles[userId] = {};
-                    sConsoles = this.savedConsoles[userId];
-                }
-                sConsoles[args[1]] = {};
-                sConsoles[args[1]].display = userConsole.display.slice();
-                sConsoles[args[1]].scope = JSON.parse(JSON.stringify(userConsole.scope));
-                sConsoles[args[1]].name = args[1];
-                
-                userConsole.saveRepl(args[1]);
-                
-            }
-            
-        } else if (args[0] === "load") {
-            
-            const sConsoles = this.savedConsoles[userId]||{};
-            
-            if (!args[1] || args[1] === "list" || !sConsoles[args[1]]) { //if no name, or /load list, or can't find save
-                
-                const nameList = [];
-                for (var key in sConsoles) {
-                    if (sConsoles.hasOwnProperty(key) && sConsoles[key]) {
-                        nameList.push(sConsoles[key].name);
-                    }
-                }
-                ev.reply("Saved MathREPL Sessions: " + nameList.join(", "));
-                
-                
-            } else if (args[1] && sConsoles[args[1]]) { //if there's a name and can find savefile
-                
-                if (userConsole) {
-                    userConsole.destroy();
-                    this.activeConsoles[userId] = false;
-                }
-                
-                const console = new Console(ev, sConsoles[args[1]].display, sConsoles[args[1]].scope);
-                this.activeConsoles[userId] = console;
-                
-            }
-            
-            
         } else if (args[0]) {
             if (userConsole) {
                 userConsole.updateRepl(ev);
@@ -133,8 +101,119 @@ class MathRepl { //This is an module that adds some essential commands to the se
         
     }
 }
-module.exports = MathRepl;
+module.exports = GameMod;
 
+class Game {
+    constructor(game, id, maxplayers, hostevent) {
+        this.game = game||"Game";
+        this.roomId = id||"0";
+        this.maxplayers = maxplayers||1;
+        this.hostId = hostevent.author.id||"0";
+        this.players = [];
+        this.online = [];
+        this.data = {};
+        
+    }
+    load(players, data) {
+        this.players = players||[];
+        this.data = data||{};
+    }
+    addPlayer(user) {
+        if (!this.isPlayer(user)) { //if user is not already a player
+            this.players.push(user.id); //add the player
+            this.data[user.id] = {}; //create player data
+        }
+    }
+    connectPlayer(user) {
+        if (!this.isOnline(user) && this.isPlayer(user)) { //if user is not already online and is a player
+            this.online.push(user.id);
+        }
+    }
+    disconnectPlayer(user) {
+        const index = this.online.indexOf(user.id);
+        if (index > -1) { //if user is online
+            this.online.splice(index, 1);
+        }
+    }
+    isPlayer(user) {
+        return (this.players.indexOf(user.id) !== -1);
+    }
+    isOnline(user) {
+        return (this.online.indexOf(user.id) !== -1);
+    }
+    isHost(user) {
+        return this.hostId === user.id;
+    }
+    canJoin() {
+        return (this.maxplayers - this.players.length) > 0;
+    }
+}
+
+class RockPaperScissorsMp extends Game {
+    constructor(id, hostevent) {
+        super("RockPaperScissorsGameMp", id, 1, hostevent);
+    }
+    
+    
+    
+}
+
+class MiniTestClient {
+    constructor(event, game) {
+        this.userId = event.author.id;
+        this.game = game;
+        
+        const self = this;
+        event.channel.sendMessage(getMessage()).then(consolemsg => {
+            self.message = consolemsg;
+        }).catch(err => {});
+        
+    }
+    getMessage() {
+        return "";
+    }
+    refresh() {
+        const self = this;
+        
+        this.message.delete().then(delMsg => {
+            delMsg.channel.sendMessage(self.getMessage()).then(newMsg => {
+                self.message = newMsg;
+            }).catch(err => {});
+        }).catch(err => {});
+        
+    }
+    destroy() {
+        this.message.delete().then().catch(err => {});
+    }
+    
+    
+    
+}
+
+
+const randomString = function(length, chars) {
+    var mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    var result = '';
+    for (var i = length; i > 0; --i) result += mask[Math.floor(Math.random() * mask.length)];
+    return result;
+};
+//
+//console.log(randomString(16, 'aA'));
+//console.log(randomString(32, '#aA'));
+//console.log(randomString(64, '#A!'));
+
+
+
+
+
+
+
+
+/*
 class Console {
     constructor(message, display, scope) {
         this.user = message.author.username;
@@ -260,3 +339,4 @@ class Console {
         });
     }
 }
+*/
