@@ -16,7 +16,7 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
             return;
         }
         
-        const msg = eventpacket.msg;
+        const msg = eventpacket.msgL;
         const hasSymbol = !utils.isLetter(msg.charAt(0));
         const symbol = (hasSymbol) ? msg.charAt(0) : "";
         const msgParsed = (hasSymbol) ? msg.slice(1, msg.length) : msg;
@@ -28,7 +28,9 @@ class CommandProc { //This module parses raw text into commands. It tokenises th
         
         infopacket.command = {};
         infopacket.command.strength = eventpacket.strength + hasSymbol;
-        infopacket.command.text = msg;
+        infopacket.command.textraw = eventpacket.rawmsg; //raw msg
+        infopacket.command.textnom = eventpacket.msg; //msg without mention
+        infopacket.command.text = msg; //msg lowercase without mention
         infopacket.command.symbol = symbol;
         infopacket.command.verb = terms[0];
         infopacket.command.args = terms.slice(1, tokens.length);

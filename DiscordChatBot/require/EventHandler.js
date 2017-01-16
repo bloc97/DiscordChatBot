@@ -61,7 +61,8 @@ class EventPacket {
                 this.strength = this.isBotMentionned + this.isBotNamed + this.isPrivate;
                 this.isSelf = this.userId === this.botId;
                 
-                this.msg = msgWithoutBotNick.toLowerCase();
+                this.msg = msgWithoutBotNick;
+                this.msgL = msgWithoutBotNick.toLowerCase();
             }
         }
     }

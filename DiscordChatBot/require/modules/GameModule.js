@@ -3,12 +3,50 @@ const mathjs = require("mathjs");
 
 const helpMain = "```" + 
 `Game Module Help
-   /game <game> [-switches] [--options <args>]
+   /game <command> <args> [-switches] [--options <args>]
+
+Commands:
+   
+   start           - Starts a game.
+      <game#>      - Game #
+
+   join            - Connects to a game
+      <roomId>     - Room ID or MMO Game Server ID
+
+   exit            - Closes the client and disconnects from the current active game
+
+   enter           - Signs in a game without connecting
+      <roomId>     - Room ID (Usually provided by the host)
+
+   quit            - Quits the current game
+                     This opens a slot for someone else to join, and erases your player from the game
+
+   end             - Ends the current game 
+                     only available to the games you are hosting
 
 Games:
-   Tic-Tac-Toe (SP/MP)
+   1- Rock-Paper-Scissors (SP/MP)
+   2- Tic-Tac-Toe         (SP/MP)
+` + "```";
    
    
+//Options:   
+//   
+//   
+//   exit            - Closes the active console.
+//   kill            - Ends the active console.
+//   clear           - Clears the current active console.
+//   refresh         - Refreshes and drags the console to the bottom.
+//
+//   save            - Starts a saved session.
+//      <name>
+//   load            - Saves the current session state.
+//      <name>
+
+
+const helpRPS = "```" + 
+`Rock-Paper-Scissors Game Help
+   /game 1 [-switches] [--options <args>]
    
 Options:   
    
@@ -33,6 +71,8 @@ Options:
 //one is where each player has its own console
 //other is where all players use the same console on one channel
 
+const RockPaperScissorsMp = require("./Games/RockPaperScissorsMp.js");
+const RockPaperScissorsSp = require("./Games/RockPaperScissorsSp.js");
 
 class GameMod { //This is an module that adds some essential commands to the selfbot
     
@@ -43,7 +83,7 @@ class GameMod { //This is an module that adds some essential commands to the sel
         this.id = 950, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "game1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
-        this.isExample = true; //delete this line to enable the module
+        this.isExample = false; //delete this line to enable the module
         //modules are run in order, from the smallest id to the largest id.
         
         this.selfClients = {}; //selfClients[userId] to get client
@@ -64,130 +104,111 @@ class GameMod { //This is an module that adds some essential commands to the sel
         const command = infopacket.command.verb;
         const args = infopacket.command.args;
         const ev = eventpacket.event;
+        const user = eventpacket.event.author;
         const userId = eventpacket.userId;
+        const channelId = eventpacket.channelId;
         
         
-        if (command !=="math") {
+        if (command !=="game") {
             return;
         }
+        const userClient = this.selfClients[userId];
+        const channelClient = this.sharedClients[channelId];
+        
         if (!args[0] || args[0] === "help") {
+            if (userClient) { //if game is currently running
+                //userClient.game.getHelp();
+                return;
+            }
             ev.author.sendMessage(helpMain);
             return;
         }
-        const userConsole = this.activeConsoles[userId];
-        if (["start","init"].indexOf(args[0]) !== -1) {
-            if (userConsole) {
-                userConsole.destroy();
-                this.activeConsoles[userId] = false;
-            }
-            const console = new Console(ev);
-            this.activeConsoles[userId] = console;
+        
+        
+        if (args[0] === "start" && args[1]) {
+            const roomId = this.getRoomId();
             
-            return;
-        } else if (["close","end","exit"].indexOf(args[0]) !== -1 && userConsole) {
-            userConsole.destroy();
-            ev.delete().then().catch(err => {});
-            this.activeConsoles[userId] = false;
-            
-        } else if (["refresh","reload"].indexOf(args[0]) !== -1 && userConsole) {
-            userConsole.registerCommand(ev);
-            userConsole.refresh(ev);
-        } else if (args[0]) {
-            if (userConsole) {
-                userConsole.updateRepl(ev);
+            if (args[1] === "1") {
+                this.mpGames[roomId] = new RockPaperScissorsSp(roomId, ev);
+            } else {
+                this.mpGames[roomId] = new RockPaperScissorsMp(roomId, ev);
             }
+            
+            user.sendMessage("RoomID: " + roomId);
+            
+        } else if (args[0] === "enter" && args[1]) {
+            
+            if (this.mpGames[args[1]]) {
+                this.mpGames[args[1]].addPlayer(user);
+            }
+            
+        } else if (args[0] === "join" && args[1]) {
+            
+            const thisgame = this.mpGames[args[1]];
+            
+            if (thisgame && !userClient) {
+                this.selfClients[userId] = thisgame.connectPlayer(ev);
+            }
+            
+        } else if (args[0] === "exit") {
+            if (channelClient) {
+                
+            } else if (userClient) {
+                this.selfClients[userId] = false;
+                userClient.disconnect();
+            }
+            
+            
+        } else if (userClient) {
+            
+            userClient.eval(user, args[0], infopacket.command);
         }
+        
+//        if (["start","init"].indexOf(args[0]) !== -1) {
+//            if (userConsole) {
+//                userConsole.destroy();
+//                this.activeConsoles[userId] = false;
+//            }
+//            const console = new Console(ev);
+//            this.activeConsoles[userId] = console;
+//            
+//            return;
+//        } else if (["close","end","exit"].indexOf(args[0]) !== -1 && userConsole) {
+//            userConsole.destroy();
+//            ev.delete().then().catch(err => {});
+//            this.activeConsoles[userId] = false;
+//            
+//        } else if (["refresh","reload"].indexOf(args[0]) !== -1 && userConsole) {
+//            userConsole.registerCommand(ev);
+//            userConsole.refresh(ev);
+//        } else if (args[0]) {
+//            if (userConsole) {
+//                userConsole.updateRepl(ev);
+//            }
+//        }
         
         
     }
+    getRoomId() {
+        let randId = "";
+        do {
+            randId = randomString(1, "a") + randomString(7, "a#");
+        }while(this.roomIds.indexOf(randId) > 0);
+        
+        this.roomIds.push(randId);
+        
+        return randId;
+        
+    }
+    
 }
 module.exports = GameMod;
 
-class Game {
-    constructor(game, id, maxplayers, hostevent) {
-        this.game = game||"Game";
-        this.roomId = id||"0";
-        this.maxplayers = maxplayers||1;
-        this.hostId = hostevent.author.id||"0";
-        this.players = [];
-        this.online = [];
-        this.data = {};
-        
+class User {
+    constructor(id, name) {
+        this.id = id;
+        this.username = name;
     }
-    load(players, data) {
-        this.players = players||[];
-        this.data = data||{};
-    }
-    addPlayer(user) {
-        if (!this.isPlayer(user)) { //if user is not already a player
-            this.players.push(user.id); //add the player
-            this.data[user.id] = {}; //create player data
-        }
-    }
-    connectPlayer(user) {
-        if (!this.isOnline(user) && this.isPlayer(user)) { //if user is not already online and is a player
-            this.online.push(user.id);
-        }
-    }
-    disconnectPlayer(user) {
-        const index = this.online.indexOf(user.id);
-        if (index > -1) { //if user is online
-            this.online.splice(index, 1);
-        }
-    }
-    isPlayer(user) {
-        return (this.players.indexOf(user.id) !== -1);
-    }
-    isOnline(user) {
-        return (this.online.indexOf(user.id) !== -1);
-    }
-    isHost(user) {
-        return this.hostId === user.id;
-    }
-    canJoin() {
-        return (this.maxplayers - this.players.length) > 0;
-    }
-}
-
-class RockPaperScissorsMp extends Game {
-    constructor(id, hostevent) {
-        super("RockPaperScissorsGameMp", id, 1, hostevent);
-    }
-    
-    
-    
-}
-
-class MiniTestClient {
-    constructor(event, game) {
-        this.userId = event.author.id;
-        this.game = game;
-        
-        const self = this;
-        event.channel.sendMessage(getMessage()).then(consolemsg => {
-            self.message = consolemsg;
-        }).catch(err => {});
-        
-    }
-    getMessage() {
-        return "";
-    }
-    refresh() {
-        const self = this;
-        
-        this.message.delete().then(delMsg => {
-            delMsg.channel.sendMessage(self.getMessage()).then(newMsg => {
-                self.message = newMsg;
-            }).catch(err => {});
-        }).catch(err => {});
-        
-    }
-    destroy() {
-        this.message.delete().then().catch(err => {});
-    }
-    
-    
-    
 }
 
 
@@ -201,142 +222,3 @@ const randomString = function(length, chars) {
     for (var i = length; i > 0; --i) result += mask[Math.floor(Math.random() * mask.length)];
     return result;
 };
-//
-//console.log(randomString(16, 'aA'));
-//console.log(randomString(32, '#aA'));
-//console.log(randomString(64, '#A!'));
-
-
-
-
-
-
-
-
-/*
-class Console {
-    constructor(message, display, scope) {
-        this.user = message.author.username;
-        this.maxLines = 15;
-        this.display = [];
-        this.scope = {};
-        this.log = [];
-        this.display.push("MathJS REPL [Version 0.01]");
-        this.display.push("(c) 2016 MIT. All rights reserved.");
-        this.display.push("");
-        this.display.push(this.user + "> mathjs");
-        this.display.push("> ");
-        
-        if (display && scope) {
-            this.display = display.slice();
-            this.scope = JSON.parse(JSON.stringify(scope));
-        }
-        
-        const self = this;
-        message.channel.sendMessage(this.getString()).then(consolemsg => {
-            self.message = consolemsg;
-        }).catch(err => {});
-        message.delete().then().catch(err => {});
-    }
-    
-    load(display, scope) {
-        this.display = display;
-        this.scope = scope;
-    }
-    
-    getString() { //gets the string to print in js markup
-        const size = this.display.length;
-        let limitedDisplay = this.display;
-        if (size > this.maxLines) {
-            limitedDisplay = this.display.slice(size-this.maxLines-1, size);
-        }
-        return "```js\n" + limitedDisplay.join("\n") + "```";
-    }
-    
-    getEndString() { //gets the string to print, but without markup
-        const size = this.display.length;
-        let limitedDisplay = this.display;
-        if (size > this.maxLines) {
-            limitedDisplay = this.display.slice(size-this.maxLines-1, size);
-        }
-        return "```" + limitedDisplay.join("\n") + "```";
-    }
-    
-    print(str) { //adds the string to this.display
-        this.display[this.display.length-1] += str;
-    }
-    println(str) { //adds the string to this.display but with a new line
-        this.display.push("> " + str);
-    }
-    
-    refresh(ev) {
-        this.message.delete().then().catch(err => {});
-        const self = this;
-        ev.channel.sendMessage(this.getString()).then(message => {
-            self.message = message;
-        }).catch(err => {});
-    }
-    
-    clear() {
-        this.display = [];
-        this.display.push("> ");
-        this.message.edit(this.getString()).then().catch(err => {});
-    }
-    
-    endRepl() {
-        this.print("exit\n \n");
-        this.message.edit(this.getEndString()).then().catch(err => {});
-        this.message = false;
-    }
-    
-    saveRepl(name) {
-        this.print("save \"" + name + "\"");
-        this.println("Saved as \"" + name + "\"");
-        this.message.edit(this.getString()).then().catch(err => {});
-    }
-    
-    destroy() {
-        this.message.delete().then().catch(err => {});
-    }
-    
-    updateRepl(ev) {
-        const msg = ev.content;
-        const str = utils.clearWhitespaces(msg.slice(msg.indexOf("math")+4, msg.length));
-        this.print(str);
-        
-        try {
-            const evalstr = mathjs.eval(str + "", this.scope);
-            this.println(evalstr);
-        } catch (err) {
-            this.println(err);
-        }
-        
-        this.println("");
-        
-        this.registerCommand(ev, true);
-    }
-    
-    registerCommand(commandMsg, isChanged) {
-        const self = this;
-        const oldMsg = this.message;
-        commandMsg.delete().then(message => {
-            if (oldMsg.channel !== commandMsg.channel) {
-                oldMsg.delete().then(message => {
-                    commandMsg.channel.sendMessage(self.getString()).then(consolemsg => {
-                        self.message = consolemsg;
-                    }).catch(err => {});
-                }).catch(err => {});
-            } else if (isChanged) {
-                oldMsg.edit(self.getString()).then().catch(err => {});
-            }
-            
-        }).catch(err => {
-            oldMsg.delete().then(message => {
-                commandMsg.channel.sendMessage(self.getString()).then(consolemsg => {
-                    self.message = consolemsg;
-                }).catch(err => {});
-            }).catch(err => {});
-        });
-    }
-}
-*/
