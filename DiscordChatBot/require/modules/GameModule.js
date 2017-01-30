@@ -83,11 +83,10 @@ class GameMod { //This is an module that adds some essential commands to the sel
         this.id = 950, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "game1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
-        this.isExample = false; //delete this line to enable the module
         //modules are run in order, from the smallest id to the largest id.
         
         this.selfClients = {}; //selfClients[userId] to get client
-        this.sharedClients = {}; //sharedClients[channelId] to get client
+        this.sharedClients = {}; //sharedClients[channelId] to get instance
         
         this.roomIds = [];
         

@@ -38,6 +38,9 @@ class TicTacToeMp extends GameMP {
             this.data[user.id].unit = 0; //1 for X, -1 for O
             
         }
+        if (this.online.length === 2) { //when two players join for the first time
+            this.newBoard(); //start a new game, set one player as X randomly
+        }
         
         if (!this.isOnline(user) && this.isPlayer(user)) { //if user is not already online and is a player
             this.online.push(user.id);
@@ -47,9 +50,6 @@ class TicTacToeMp extends GameMP {
             return this.data[user.id].client; //returns the client
         }
         
-        if (this.online.length === 2) {
-            this.newBoard();
-        }
         
         return false;
     }
@@ -65,6 +65,13 @@ class TicTacToeMp extends GameMP {
         }
     }
     newBoard() {
+        const id0 = this.online[0];
+        const id1 = this.online[1];
+        const p0 = this.data[id0];
+        const p1 = this.data[id1];
+        
+        //get last loser, and set him as X (first to play)
+        //reset the board for new game
         
     }
     eval(user, arg, command) {
