@@ -33,7 +33,7 @@ class CppParse {
     }
     main(eventpacket, infopacket, data) {
         
-        if (eventpacket.type !== "message" || eventpacket.isSelf) {
+        if (eventpacket.type !== "message" || eventpacket.strength < 1 || eventpacket.isSelf) {
             return;
         }
         

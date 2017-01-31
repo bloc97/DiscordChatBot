@@ -37,7 +37,7 @@ const clearWhitespaces = function(msg) { //removes the beginning whitespaces
     }
     return msg.slice(startindex, msg.length);
 };
-const clearEndWhitespaces = function(msg) { //removes the beginning whitespaces
+const clearEndWhitespaces = function(msg) { //removes the ending whitespaces
     let endindex = msg.length-1;
     for (let i=endindex; i>=0; i--) {
         if (msg.charAt(i) !== " ") {
