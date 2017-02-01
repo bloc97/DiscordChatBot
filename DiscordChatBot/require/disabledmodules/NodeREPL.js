@@ -3,11 +3,11 @@ const utils = require("../utils.js");
 class NodeRepl { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
-        this.name = "CREP";
-        this.desc = "C++ REPL Module";
-        this.refname = "CppRepl";
+        this.name = "NREP";
+        this.desc = "Node REPL Module";
+        this.refname = "NodeRepl";
         this.id = 610, //use an ID larger than 100 so that CommandProc processes the message before this module
-        this.uid = "crep1000"; //Unique ID used to save data to file
+        this.uid = "nrep1000"; //Unique ID used to save data to file
         this.isDebug = debug||false;
         this.isExample = true; //delete this line to enable the module
         //modules are run in order, from the smallest id to the largest id.

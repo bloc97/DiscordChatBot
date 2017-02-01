@@ -19,7 +19,7 @@ class ModuleHandler {
             let Module;
             
             try {
-                if (moduleFiles[i]==="Games") continue; //Skip the "Games" Folder
+                if (moduleFiles[i].indexOf(".js") === -1) continue; //Skip the "Games" Folder
                 Module = require("./modules/"+moduleFiles[i]);
                 this.register(new Module(this.isDebug));
             } catch (err) {
