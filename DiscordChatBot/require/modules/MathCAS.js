@@ -1,12 +1,11 @@
 const utils = require("../utils.js");
-const mathjs = require("mathjs");
-
+const Algebrite = require("./Interpreters/Algebrite.js");
 const helpMain = "```" + 
-`MathREPL Module Help
+`MathCAS Module Help
    /math <command> <args> 
 
 Commands:
-   init            - Starts the REPL console.
+   init            - Starts the CAS console.
    
    exit            - Closes the active console.
    kill            - Ends the active console.
@@ -19,15 +18,15 @@ Commands:
       <name>`
 + "```";
 
-class MathRepl { //This is an module that adds some essential commands to the selfbot
+class MathCas { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
-        this.name = "MREP";
-        this.desc = "MathJS REPL Module";
-        this.refname = "MathRepl";
-        this.id = 720, //use an ID larger than 100 so that CommandProc processes the message before this module
-        this.uid = "mrep1000"; //Unique ID used to save data to file
-        this.command = "math"; //Command that activates this module
+        this.name = "MCAS";
+        this.desc = "MathCAS Module";
+        this.refname = "MathCas";
+        this.id = 721, //use an ID larger than 100 so that CommandProc processes the message before this module
+        this.uid = "mcas1000"; //Unique ID used to save data to file
+        this.command = "cas"; //Command that activates this module
         this.help = helpMain; //Help that displays when users ask
         this.isDebug = debug||false;
         //modules are run in order, from the smallest id to the largest id.
@@ -47,7 +46,7 @@ class MathRepl { //This is an module that adds some essential commands to the se
         const userId = eventpacket.userId;
         
         
-        if (command !=="math") {
+        if (command !=="cas") {
             return;
         }
         if (!args[0] || args[0] === "help") {
@@ -110,7 +109,7 @@ class MathRepl { //This is an module that adds some essential commands to the se
                         nameList.push(sConsoles[key].name);
                     }
                 }
-                ev.reply("Saved MathREPL Sessions: " + nameList.join(", "));
+                ev.reply("Saved MathCAS Sessions: " + nameList.join(", "));
                 
                 
             } else if (args[1] && sConsoles[args[1]]) { //if there's a name and can find savefile
@@ -135,7 +134,7 @@ class MathRepl { //This is an module that adds some essential commands to the se
         
     }
 }
-module.exports = MathRepl;
+module.exports = MathCas;
 
 class Console {
     constructor(message, display, scope) {
@@ -144,10 +143,10 @@ class Console {
         this.display = [];
         this.scope = {};
         this.log = [];
-        this.display.push("MathJS REPL [Version 0.01]");
-        this.display.push("(c) 2016 MIT. All rights reserved.");
+        this.display.push("Algebrite REPL [Version 0.01]");
+        this.display.push("(c) 2017 MIT. All rights reserved.");
         this.display.push("");
-        this.display.push(this.user + "> mathjs");
+        this.display.push(this.user + "> algebrite");
         this.display.push("> ");
         
         if (display && scope) {
@@ -189,7 +188,7 @@ class Console {
         this.display[this.display.length-1] += str;
     }
     println(str) { //adds the string to this.display but with a new line
-        this.display.push("> " + str);
+        this.display.push(str);
     }
     
     refresh(ev) {
@@ -224,17 +223,22 @@ class Console {
     
     updateRepl(ev) {
         const msg = ev.content;
-        const str = utils.clearWhitespaces(msg.slice(msg.indexOf("math")+4, msg.length));
+        const str = utils.clearWhitespaces(msg.slice(msg.indexOf("cas")+3, msg.length));
         this.print(str);
         
         try {
-            const evalstr = mathjs.eval(str + "", this.scope);
-            this.println(evalstr);
+            const evalarr = Algebrite.run(str + "", true);
+            const evalstr = evalarr[0];
+            const evaltex = evalarr[1];
+            if (evalstr.length > 0) {
+                this.println(evalstr);
+            }
+            Algebrite.clearall();
         } catch (err) {
             this.println(err);
         }
         
-        this.println("");
+        this.println("> ");
         
         this.registerCommand(ev, true);
     }

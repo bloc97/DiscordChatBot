@@ -27,6 +27,8 @@ class CppParse {
         this.refname = "CppParse";
         this.id = 715, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "cppp1000"; //Unique ID used to save data to file
+        this.command = "cpp"; //Command that activates this module
+        this.help = helpMain; //Help that displays when users ask
         this.isDebug = debug||false;
         //modules are run in order, from the smallest id to the largest id.
         
@@ -45,7 +47,7 @@ class CppParse {
         const rawmsg = eventpacket.rawmsg;
         
         
-        if (command !=="cpp") {
+        if (command !== this.command) {
             
             if (rawmsg.indexOf("```cpp") > -1) {
                 
@@ -59,7 +61,7 @@ class CppParse {
         
         
         if (!args[0] || args[0] === "help") {
-            ev.author.sendMessage(helpMain);
+            ev.author.sendMessage(this.help);
             return;
         } else if (args[0]) {
             parseCpp(ev);

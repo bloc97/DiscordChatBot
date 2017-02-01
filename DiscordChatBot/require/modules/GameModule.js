@@ -82,6 +82,8 @@ class GameMod { //This is an module that adds some essential commands to the sel
         this.refname = "GameMod";
         this.id = 950, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "game1000"; //Unique ID used to save data to file
+        this.command = "game"; //Command that activates this module
+        this.help = helpMain; //Help that displays when users ask
         this.isDebug = debug||false;
         //modules are run in order, from the smallest id to the largest id.
         
