@@ -2,6 +2,7 @@
 //EigenMath Manual
 const utils = require("../utils.js");
 const Algebrite = require("./Interpreters/Algebrite.js");
+//const Algebrite = require("algebrite");
 const Jimp = require("jimp");
 const helpMain = "```" + 
 `MiniAlpha Help
@@ -41,7 +42,6 @@ class MathEval { //This is an module that adds some essential commands to the se
         
     }
     main(eventpacket, infopacket, data) {
-        console.log(eventpacket.type, eventpacket.botNick, eventpacket.botName)
         if (eventpacket.type !== "message" || eventpacket.strength < 1 || eventpacket.isSelf) {
             return;
         }
@@ -150,6 +150,57 @@ const isLetter = function(char) {
     return char.toLowerCase() !== char.toUpperCase();
 };
 
+const isNumber = function(char) {
+    return +char === +char;
+};
+
+const findNextDifferentChar = function(str, index) { //find the next dissimilar character
+    if (isNumber(str[index])) { //if character is a number, return next character that isn't a number
+        for (let i=index; i<str.length; i++) {
+            if (!isNumber(str[i])) {
+                return i;
+            }
+        }
+        return str.length;
+    } else if (isLetter(str[index])) { //if character is a letter, return next character that isn't a letter
+        for (let i=index; i<str.length; i++) {
+            if (!isLetter(str[i])) {
+                return i;
+            }
+        }
+        return str.length;
+        
+    } else if (str[index] === "{") { //if character is a bracket, return next character that is the inverted bracket, so as to not modify existing expressions
+        for (let i=index; i<str.length; i++) {
+            if (str[i] === "}") {
+                return i;
+            }
+        }
+        return str.length;
+        
+    } else { //if character is a parenthesis or a symbol, return the end index
+        return str.length;
+    }
+};
+
+const fixExpLatex = function(str) {
+    
+    let textPart = [];
+    let lastindex = 0;
+    
+    for (let i=0; i<str.length-1; i++) {
+        if (str[i] === "^") {
+            const nextindex = findNextDifferentChar(str, i+1); //find next character that isn't similar to the one after the "^"
+            textPart.push(str.slice(lastindex, i+1)); //push the unchanged part
+            textPart.push("{" + str.slice(i+1, nextindex) + "}"); //push the exponent part in brackets
+            lastindex = nextindex;
+            i = nextindex-1; //skip the part already saved
+        }
+    }
+    textPart.push(str.slice(lastindex, str.length)); //push in the last part that was not detected
+    return textPart.join("");
+};
+
 const getDerivStr = function(expression, valsArr) {
     const expressionTeX = Algebrite.run(expression, true)[1];
     expression = " " + expression + " "; //Pad the input
@@ -209,8 +260,9 @@ const getDerivStr = function(expression, valsArr) {
 const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, isText) {
     
     if (evaltext) {
-        console.log(evaltext);
         evaltext = evaltext.replace(/ /gi, "%20");
+        evaltext = fixExpLatex(evaltext);
+        console.log(evaltext);
         
         Jimp.read("https://latex.codecogs.com/png.latex?{Evaluate:%20" + evaltext + "}", function(err, image){
             try { 
@@ -254,13 +306,14 @@ const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
         anstextpre = anstextpre || " ";
     }
     
-    anstextpre = anstextpre || "Answer:%20";
-    anstextpost = anstextpost || "";
+    anstextpre = anstextpre || "Answer:%20{";
+    anstextpost = anstextpost || "}";
     
     const oTeX = anstextpre + outTeX + anstextpost;
     let finalTeX = oTeX.replace(/ /gi, "%20");
     finalTeX = finalTeX.replace(/\$\$\$\$\r?\n/gi, "");
     finalTeX = finalTeX.replace(/\r?\n/gi, "\\\\");
+    finalTeX = fixExpLatex(finalTeX);
     console.log(finalTeX);
     
     if (isText) {
