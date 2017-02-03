@@ -1,3 +1,5 @@
+//http://www.rejoicealways.net/lcu-semesters/fall2010/mat1302/Eigenmath.pdf
+//EigenMath Manual
 const utils = require("../utils.js");
 const Algebrite = require("./Interpreters/Algebrite.js");
 const helpMain = "```" + 
