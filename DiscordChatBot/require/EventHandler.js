@@ -55,7 +55,7 @@ class EventPacket {
                 const msgWithoutBotNick = removeBotNick(msgWithoutMention, this.botNick);
 
                 this.isBotMentionned = this.rawmsg.indexOf(botMention) !== -1;
-                this.isBotNamed = msgWithoutMention.toLowerCase().indexOf(this.botNick) === 0;
+                this.isBotNamed = msgWithoutMention.toLowerCase().indexOf(this.botNick.toLowerCase()) === 0;
                 this.isPrivate = this.mode === 2;
 
                 this.strength = this.isBotMentionned + this.isBotNamed + this.isPrivate;

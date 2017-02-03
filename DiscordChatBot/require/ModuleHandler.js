@@ -95,7 +95,7 @@ class ModuleHandler {
         }
     }
     send(eventpacket) { //sends the eventpacket and infopacket to all modules
-        this.dataHandler.smartSave();
+        //this.dataHandler.smartSave();
         let infopacket = new InfoPacket();
         
         for (var i=0, j=this.data.loaded.length; i<j; i++){
