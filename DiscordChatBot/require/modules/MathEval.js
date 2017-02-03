@@ -4,8 +4,8 @@ const utils = require("../utils.js");
 const Algebrite = require("./Interpreters/Algebrite.js");
 const Jimp = require("jimp");
 const helpMain = "```" + 
-`MiniAlpha Module Help
-   /minialpha <expression>
+`MiniAlpha Help
+   Use syntax similar to WolframAlpha.
 
 Examples:
    integral of x^2
@@ -33,7 +33,6 @@ class MathEval { //This is an module that adds some essential commands to the se
         this.refname = "MiniAlpha";
         this.id = 770, //use an ID larger than 100 so that CommandProc processes the message before this module
         this.uid = "malp1000"; //Unique ID used to save data to file
-        this.command = "minialpha"; //Command that activates this module
         this.help = helpMain; //Help that displays when users ask
         this.isDebug = debug||false;
         //modules are run in order, from the smallest id to the largest id.
@@ -42,6 +41,7 @@ class MathEval { //This is an module that adds some essential commands to the se
         
     }
     main(eventpacket, infopacket, data) {
+        console.log(eventpacket.type, eventpacket.botNick, eventpacket.botName)
         if (eventpacket.type !== "message" || eventpacket.strength < 1 || eventpacket.isSelf) {
             return;
         }
@@ -50,24 +50,22 @@ class MathEval { //This is an module that adds some essential commands to the se
         const args = infopacket.command.args;
         const ev = eventpacket.event;
         const userId = eventpacket.userId;
-        const rawmsg = eventpacket.rawmsg;
+        const text = infopacket.command.text;
         
         
-        if (command !==this.command) {
-            return;
-        }
-        const expression = new Expression(rawmsg, command);
-        if (!args[0] || args[0] === "help") {
+        const expression = new Expression(text, command);
+        if (!command || command === "help") {
             ev.author.sendMessage(helpMain);
             return;
         }
+        expression.removeAllInstance("evaluate");
         
         if (expression.contains("integral ")) {
             expression.removeBefore("integral");
             expression.removeAllInstance("of");
             
             let respectToArr = expression.findDx();
-            //console.log(respectToArr);
+            
             if (respectToArr.length < 1) {
                 respectToArr = ["x"];
             }
@@ -211,18 +209,25 @@ const getDerivStr = function(expression, valsArr) {
 const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, isText) {
     
     if (evaltext) {
-        
+        console.log(evaltext);
         evaltext = evaltext.replace(/ /gi, "%20");
         
         Jimp.read("https://latex.codecogs.com/png.latex?{Evaluate:%20" + evaltext + "}", function(err, image){
-            image.invert();
-            image.getBuffer(Jimp.MIME_PNG, function(err, data) {
-                ev.channel.sendFile(data).then(function(message) {
+            try { 
                 
-                    evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
-                
-                }).catch(err => {});
-            });
+                image.invert();
+                image.getBuffer(Jimp.MIME_PNG, function(err, data) {
+                    ev.channel.sendFile(data).then(function(message) {
+
+                        evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
+
+                    }).catch(err => {});
+                });
+            
+            } catch (err) {
+                console.log(err);
+                evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
+            }
 
         });
         
@@ -235,7 +240,7 @@ const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, is
 
 const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
     
-    
+    //isText = true;
     //console.log(expression);
     const outeval = Algebrite.run(expression, true);
     let outstr = outeval[0];
@@ -253,17 +258,25 @@ const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
     anstextpost = anstextpost || "";
     
     const oTeX = anstextpre + outTeX + anstextpost;
-    const finalTeX = oTeX.replace(/ /gi, "%20");
+    let finalTeX = oTeX.replace(/ /gi, "%20");
+    finalTeX = finalTeX.replace(/\$\$\$\$\r?\n/gi, "");
+    finalTeX = finalTeX.replace(/\r?\n/gi, "\\\\");
+    console.log(finalTeX);
     
     if (isText) {
         ev.reply(outstr).then().catch(err =>{});
     } else {
 
         Jimp.read("https://latex.codecogs.com/png.latex?{" + finalTeX + "}", function(err, image){
-            image.invert();
-            image.getBuffer(Jimp.MIME_PNG, function(err, data) {
-                        ev.channel.sendFile(data);
-            });
+            try {
+                image.invert();
+                image.getBuffer(Jimp.MIME_PNG, function(err, data) {
+                            ev.channel.sendFile(data);
+                });
+            } catch (err) {
+                ev.reply(outstr).then().catch(err =>{});
+                console.log(err);
+            }
 
         });
     }
@@ -273,7 +286,7 @@ const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
 class Expression {
     
     constructor(msg, command) {
-        this.content = msg.slice(msg.indexOf(command)+command.length, msg.length);
+        this.content = msg;
     }
     contains(str) {
         return this.content.indexOf(str) > -1;
