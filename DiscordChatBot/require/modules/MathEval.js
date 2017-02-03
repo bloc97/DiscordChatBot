@@ -10,6 +10,7 @@ const helpMain = "```" +
 Examples:
    integral of x^2
    integral of sin(2x) from 0 to pi/2
+   integral of sqrt(x y) + x sin(y)
    derivative of e^x
    derivative of sqrt(34-x+y) with respect to y
    d/dx e^x
@@ -79,8 +80,7 @@ class MathEval { //This is an module that adds some essential commands to the se
                 
                 const expressionTeX = Algebrite.run(expression.content, true)[1];
                 
-                const finalExpressionTeX = ("\\int_" + valsArr[0] + "^" + valsArr[1] + " " + expressionTeX + " \\,d" + respectToArr[0]);
-                //console.log(finalExpressionTeX);
+                const finalExpressionTeX = ("\\int_{" + valsArr[0] + "}^{" + valsArr[1] + "}{" + expressionTeX + "} \\,d" + respectToArr[0]);
                 
                 evalReply("defint(" + expression.content + "," + respectToArr[0] + "," + vals + ")", ev, finalExpressionTeX);
                 
@@ -116,26 +116,24 @@ class MathEval { //This is an module that adds some essential commands to the se
             }
             const valsArr = vals.split(",");
             
-            const expressionTeX = Algebrite.run(expression.content, true)[1];
-            const derivstr = getDerivStr(expression.content, valsArr);
-            
-            const finalExpressionTeX = (derivstr + "{" + expressionTeX + "}");
+            const finalExpressionTeX = getDerivStr(expression.content, valsArr);
             //console.log(finalExpressionTeX);
             //console.log(expression.content);
             evalReply("d(" + expression.content + "," + vals + ")", ev, finalExpressionTeX);
             
         
         } else if (expression.contains("d/d")) {
-            
             expression.removeAllInstance("of");
             
-            let vals = expression.findDd();
+            let valsArr = expression.findDd();
             expression.removeDd();
-            if (vals.length < 1) {
-                vals = ["x"];
+            if (valsArr.length < 1) {
+                valsArr = ["x"];
             }
+            let vals = valsArr.join(",");
+            const finalExpressionTeX = getDerivStr(expression.content, valsArr);
             
-            evalReply("d(" + expression.content + "," + vals.join(",") + ")", ev);
+            evalReply("d(" + expression.content + "," + vals + ")", ev, finalExpressionTeX);
             
         
         } else {
@@ -155,8 +153,10 @@ const isLetter = function(char) {
 };
 
 const getDerivStr = function(expression, valsArr) {
+    const expressionTeX = Algebrite.run(expression, true)[1];
     expression = " " + expression + " "; //Pad the input
     
+    //Find out the number of variables (derivative or partial derivative)
     const variables = [];
     for (let i=0; i<expression.length-2; i++) {
         if (!isLetter(expression[i]) && isLetter(expression[i+1]) && !isLetter(expression[i+2])) {
@@ -168,40 +168,42 @@ const getDerivStr = function(expression, valsArr) {
     const varnum = variables.length;
     const dsymbol = (varnum > 1) ? "\\partial " : "d"; 
     
+    //Find out the order of the derivative
     const dvariables = [];
     const dvariablespow = [];
     let dorder = 0;
     
     for (let i=0; i<valsArr.length; i++) {
-        const index = dvariables.indexOf(valsArr[i]);
+        const currentVal = valsArr[i].replace(/ /g, "");
+        const index = dvariables.indexOf(currentVal);
         dorder++;
         if (index > -1) {
             dvariablespow[index] += 1;
         } else {
-            dvariables.push(valsArr[i]);
+            dvariables.push(currentVal);
             dvariablespow.push(1);
         }
     }
     
+    //Create the LaTeX string
     let derivstr = "";
-    
     for (let i=0; i<dvariables.length; i++) {
         
         if (dvariablespow[i] === 1) {
             derivstr = derivstr + dsymbol + dvariables[i] + "\\,";
         } else {
-            derivstr = derivstr + dsymbol + "^" + dvariablespow[i] + dvariables[i] + "\\,";
+            derivstr = derivstr + dsymbol + dvariables[i] + "^" + dvariablespow[i] + "\\,";
         }
         
     }
     
     if (dorder < 2) {
-        derivstr = "\\frac{d}{" + derivstr + "}";
+        derivstr = "\\frac{" + dsymbol + "}{" + derivstr + "}";
     } else {
-        derivstr = "\\frac{d^" + dorder + "}{" + derivstr + "}";
+        derivstr = "\\frac{" + dsymbol + "^" + dorder + "}{" + derivstr + "}";
     }
     
-    return derivstr;
+    return derivstr + "\\bigg({" + expressionTeX + "}\\bigg)";
 };
 
 
@@ -233,20 +235,31 @@ const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, is
 
 const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
     
-    anstextpre = anstextpre || "%20";
-    anstextpost = anstextpost || "%20";
     
     //console.log(expression);
     const outeval = Algebrite.run(expression, true);
-    const outstr = outeval[0];
-    const outTeX = outeval[1];
+    let outstr = outeval[0];
+    let outTeX = outeval[1];
     Algebrite.clearall();
     //console.log(outstr);
+    
+    if (outstr.indexOf("not find") > -1) {
+        outstr = "Sorry, could not find a solution.";
+        outTeX = "\\text{Sorry, could not find a solution.}";
+        anstextpre = anstextpre || " ";
+    }
+    
+    anstextpre = anstextpre || "Answer:%20";
+    anstextpost = anstextpost || "";
+    
+    const oTeX = anstextpre + outTeX + anstextpost;
+    const finalTeX = oTeX.replace(/ /gi, "%20");
+    
     if (isText) {
         ev.reply(outstr).then().catch(err =>{});
     } else {
 
-        Jimp.read("https://latex.codecogs.com/png.latex?{Answer:%20" + anstextpre + outTeX + anstextpost + "}", function(err, image){
+        Jimp.read("https://latex.codecogs.com/png.latex?{" + finalTeX + "}", function(err, image){
             image.invert();
             image.getBuffer(Jimp.MIME_PNG, function(err, data) {
                         ev.channel.sendFile(data);
@@ -310,7 +323,7 @@ class Expression {
         const d = [];
         const str = this.content;
         for (let i=0; i<str.length-1; i++) {
-            if (str[i] === "d" && str[i+1] === "/" && str[i+2] === "d" && str[i+3].toUpperCase() !== str[i+3].toLowerCase()) { //if we found dx, dy, dA etc...
+            if (str[i] === "d" && str[i+1] === "/" && str[i+2] === "d" && str[i+3].toUpperCase() !== str[i+3].toLowerCase()) { //if we found d/dx, d/dy, d/dA etc...
                 d.push(str[i+3]);
             }
         }
