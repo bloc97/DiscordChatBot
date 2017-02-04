@@ -134,6 +134,36 @@ class MathEval { //This is an module that adds some essential commands to the se
             evalReply("d(" + expression.content + "," + vals + ")", ev, finalExpressionTeX);
             
         
+        } else if (expression.contains("sum")) {
+            expression.removeBefore("sum");
+            expression.removeAllInstance("of");
+            
+            if (expression.contains("from")) {
+                const from = expression.removeAfter("from");
+                const valsArr = from.split("to");
+                
+                const firstpt = valsArr[0];
+                const secondpt = valsArr[1];
+                
+                const firstptArr = firstpt.split("=");
+                const variable = firstptArr[0];
+                const begin = firstptArr[1];
+                const end = secondpt;
+                
+                //console.log(begin);
+                
+                const finalExpressionTeX = getSumStr(expression.content, variable, begin, end);
+                //console.log(finalExpressionTeX);
+                evalReply("float(sum(" + variable + "," + begin + "," + end + "," + expression.content + "))", ev, finalExpressionTeX);
+                //parse e+21 etc...
+                //doing sum of e^x from x=1 to 50 gives wrong TeX
+                
+            } else {
+                
+                
+                
+            }
+            
         } else {
             
             evalReply(expression.content, ev, false);
@@ -201,6 +231,21 @@ const fixExpLatex = function(str) {
     return textPart.join("");
 };
 
+const fixFloatLatex = function(str) {
+    
+    let textPart = [];
+    
+};
+
+
+const getSumStr = function(expression, variable, begin, end) {
+    const expressionTeX = Algebrite.run(expression, true)[1];
+    const sumstr = "\\sum_{" + variable + "=" + begin + "}^{" + end + "}";
+    
+    return sumstr + expressionTeX;
+    
+};
+
 const getDerivStr = function(expression, valsArr) {
     const expressionTeX = Algebrite.run(expression, true)[1];
     expression = " " + expression + " "; //Pad the input
@@ -241,7 +286,7 @@ const getDerivStr = function(expression, valsArr) {
         if (dvariablespow[i] === 1) {
             derivstr = derivstr + dsymbol + dvariables[i] + "\\,";
         } else {
-            derivstr = derivstr + dsymbol + dvariables[i] + "^" + dvariablespow[i] + "\\,";
+            derivstr = derivstr + dsymbol + dvariables[i] + "^{" + dvariablespow[i] + "}\\,";
         }
         
     }
@@ -249,7 +294,7 @@ const getDerivStr = function(expression, valsArr) {
     if (dorder < 2) {
         derivstr = "\\frac{" + dsymbol + "}{" + derivstr + "}";
     } else {
-        derivstr = "\\frac{" + dsymbol + "^" + dorder + "}{" + derivstr + "}";
+        derivstr = "\\frac{" + dsymbol + "^{" + dorder + "}}{" + derivstr + "}";
     }
     
     return derivstr + "\\bigg({" + expressionTeX + "}\\bigg)";
@@ -262,7 +307,7 @@ const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, is
     if (evaltext) {
         evaltext = evaltext.replace(/ /gi, "%20");
         evaltext = fixExpLatex(evaltext);
-        console.log(evaltext);
+        //console.log(evaltext);
         
         Jimp.read("https://latex.codecogs.com/png.latex?{Evaluate:%20" + evaltext + "}", function(err, image){
             try { 
@@ -277,7 +322,7 @@ const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, is
                 });
             
             } catch (err) {
-                console.log(err);
+                //console.log(err);
                 evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
             }
 
@@ -303,6 +348,8 @@ const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
     if (outstr.indexOf("not find") > -1) {
         outstr = "Sorry, could not find a solution.";
         outTeX = "\\text{Sorry, could not find a solution.}";
+        anstextpre = anstextpre || " ";
+    } else if (outstr.indexOf("Stop") > -1) {
         anstextpre = anstextpre || " ";
     }
     
