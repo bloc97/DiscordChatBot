@@ -200,18 +200,39 @@ const findNextDifferentChar = function(str, index) { //find the next dissimilar 
         }
         return str.length;
         
-    } else if (str[index] === "{") { //if character is a bracket, return next character that is the inverted bracket, so as to not modify existing expressions
-        for (let i=index; i<str.length; i++) {
-            if (str[i] === "}") {
-                return i;
-            }
-        }
-        return str.length;
+    } else if (str[index] === "{" || str[index] === "(") { //if character is a bracket, return -1, so as to not modify existing expressions
+        return -1;
         
-    } else { //if character is a parenthesis or a symbol, return the end index
-        return str.length;
+    } else if (str[index] === "-" || str[index] === "+") { //if character is a + or -, check next character
+        
+        return findNextDifferentChar(str, index+1);
+        
+    } else { //if character is a parenthesis or a symbol, return -1
+        return -1;
     }
 };
+
+const fixExpInput = function(str) {
+    let textPart = [];
+    let lastindex = 0;
+    
+    for (let i=0; i<str.length-1; i++) {
+        if (str[i] === "^") {
+            const nextindex = findNextDifferentChar(str, i+1); //find next character that isn't similar to the one after the "^"
+            if (nextindex === -1) {
+                continue;
+            }
+            
+            textPart.push(str.slice(lastindex, i+1)); //push the unchanged part
+            textPart.push("(" + str.slice(i+1, nextindex) + ")"); //push the exponent part in brackets
+            lastindex = nextindex;
+            i = nextindex-1; //skip the part already saved
+        }
+    }
+    textPart.push(str.slice(lastindex, str.length)); //push in the last part that was not detected
+    return textPart.join("");
+};
+
 
 const fixExpLatex = function(str) {
     
@@ -221,6 +242,10 @@ const fixExpLatex = function(str) {
     for (let i=0; i<str.length-1; i++) {
         if (str[i] === "^") {
             const nextindex = findNextDifferentChar(str, i+1); //find next character that isn't similar to the one after the "^"
+            if (nextindex === -1) {
+                continue;
+            }
+            
             textPart.push(str.slice(lastindex, i+1)); //push the unchanged part
             textPart.push("{" + str.slice(i+1, nextindex) + "}"); //push the exponent part in brackets
             lastindex = nextindex;
@@ -234,6 +259,23 @@ const fixExpLatex = function(str) {
 const fixFloatLatex = function(str) {
     
     let textPart = [];
+        let lastindex = 0;
+    
+    for (let i=0; i<str.length-1; i++) {
+        if (str[i] === "e" && (str[i+1] === "+" || str[i+1] === "-")) {
+            const nextindex = findNextDifferentChar(str, i+1); //find next character that isn't similar to the one after the "^"
+            if (nextindex === -1) {
+                continue;
+            }
+            
+            textPart.push(str.slice(lastindex, i) + "\\times{}10^"); //push the unchanged part
+            textPart.push("{" + str.slice(i+1, nextindex) + "}"); //push the exponent part in brackets
+            lastindex = nextindex;
+            i = nextindex-1; //skip the part already saved
+        }
+    }
+    textPart.push(str.slice(lastindex, str.length)); //push in the last part that was not detected
+    return textPart.join("");
     
 };
 
@@ -306,7 +348,8 @@ const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, is
     
     if (evaltext) {
         evaltext = evaltext.replace(/ /gi, "%20");
-        evaltext = fixExpLatex(evaltext);
+        //evaltext = fixExpLatex(evaltext);
+        evaltext = fixFloatLatex(evaltext);
         //console.log(evaltext);
         
         Jimp.read("https://latex.codecogs.com/png.latex?{Evaluate:%20" + evaltext + "}", function(err, image){
@@ -360,7 +403,8 @@ const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
     let finalTeX = oTeX.replace(/ /gi, "%20");
     finalTeX = finalTeX.replace(/\$\$\$\$\r?\n/gi, "");
     finalTeX = finalTeX.replace(/\r?\n/gi, "\\\\");
-    finalTeX = fixExpLatex(finalTeX);
+    //finalTeX = fixExpLatex(finalTeX);
+    finalTeX = fixFloatLatex(finalTeX);
     console.log(finalTeX);
     
     if (isText) {
@@ -386,7 +430,8 @@ const evalAnsReply = function(expression, ev, anstextpre, anstextpost, isText) {
 class Expression {
     
     constructor(msg, command) {
-        this.content = msg;
+        this.content = fixExpInput(msg);
+        this.removeAllInstance("minialpha");
     }
     contains(str) {
         return this.content.indexOf(str) > -1;
