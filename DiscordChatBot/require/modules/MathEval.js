@@ -97,7 +97,7 @@ class MathEval { //This is an module that adds some essential commands to the se
         if (expression.contains("integral ")) {
             
             outputArr = Integral.eval(expression);
-            
+            replyTeX(ev, outputArr);
             return;
             
         } else if (expression.contains("derivative ")) {
@@ -108,7 +108,7 @@ class MathEval { //This is an module that adds some essential commands to the se
             
         } else {
             
-            evalReply(expression.content, ev, false);
+            //evalReply(expression.content, ev, false);
             
             
         }
@@ -123,43 +123,6 @@ class MathEval { //This is an module that adds some essential commands to the se
 
 
 
-
-const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, isText) {
-    
-    if (evaltext) {
-        evaltext = evaltext.replace(/ /gi, "%20");
-        //evaltext = fixExpLatex(evaltext);
-        evaltext = fixFloatLatex(evaltext);
-        //console.log(evaltext);
-        
-        Jimp.read("https://latex.codecogs.com/png.latex?{Evaluate:%20" + evaltext + "}", function(err, image){
-            try { 
-                
-                image.invert();
-                image.getBuffer(Jimp.MIME_PNG, function(err, data) {
-                    ev.channel.sendFile(data).then(function(message) {
-
-                        evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
-
-                    }).catch(err => {});
-                });
-            
-            } catch (err) {
-                //console.log(err);
-                evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
-            }
-
-        });
-        
-    } else {
-        
-        evalAnsReply(expression, ev, anstextpre, anstextpost, isText);
-        
-    }
-};
-
-
-
 const parseOutputTeX = function(tex) {
     let outTeX = tex;
     //console.log(outstr);
@@ -169,9 +132,6 @@ const parseOutputTeX = function(tex) {
     } else if (outTeX.indexOf("Stop") > -1) {
         
     }
-    
-    //prestr = prestr || "Answer:%20{";
-    //poststr = poststr || "}";
     
     let finalTeX = outTeX;
     
@@ -215,60 +175,6 @@ const replyMsg = function(ev, outputArr) {
     let str = outputArr[0];
     
     ev.reply(str).then().catch(err =>{});
-};
-
-const evalAnsReply = function(expression, ev, prestr, poststr, useText) {
-    
-    //isText = true;
-    //console.log(expression);
-    const outeval = Algebrite.run(expression, true);
-    let outstr = outeval[0];
-    let outTeX = outeval[1];
-    Algebrite.clearall();
-    //console.log(outstr);
-    
-    if (outstr.indexOf("not find") > -1) {
-        outstr = "Sorry, could not find a solution.";
-        outTeX = "\\text{Sorry, could not find a solution.}";
-        prestr = prestr || " ";
-    } else if (outstr.indexOf("Stop") > -1) {
-        prestr = prestr || " ";
-    }
-    
-    prestr = prestr || "Answer:%20{";
-    poststr = poststr || "}";
-    
-    let finalTeX = prestr + outTeX + poststr;
-    
-    finalTeX = finalTeX.replace(/ /gi, "%20"); //replaces " " with %20 according to web specifications
-    finalTeX = finalTeX.replace(/\$\$\$\$\r?\n/gi, ""); //remove empty $$$$, bugs the website
-    finalTeX = finalTeX.replace(/\r?\n/gi, "\\\\"); //replace line end with \\
-    
-    //finalTeX = fixExpLatex(finalTeX);
-    finalTeX = fixFloatLatex(finalTeX);
-    
-    const urlTeX = "https://latex.codecogs.com/png.latex?{" + finalTeX + "}";
-    
-    console.log(finalTeX);
-    
-    if (useText) {
-        ev.reply(outstr).then().catch(err =>{});
-    } else {
-
-        Jimp.read(urlTeX, function(err, image){
-            try {
-                image.invert();
-                image.getBuffer(Jimp.MIME_PNG, function(err, data) {
-                            ev.channel.sendFile(data);
-                });
-            } catch (err) {
-                ev.reply(outstr).then().catch(err =>{});
-                console.log(err);
-            }
-
-        });
-    }
-    
 };
 
 class Expression {
