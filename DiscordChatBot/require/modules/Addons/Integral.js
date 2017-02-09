@@ -12,11 +12,8 @@ const eval = function(expression) {
     }
     expression.removeDx();
     
-    let inputExpressionStr = "";
-    let inputExpressionTeX = "";
-    
-    let outputExpressionStr = "";
-    let outputExpressionTeX = "";
+    let expressionStr = "";
+    let expressionTeX = "";
     
     if (expression.contains("from")) { //Definite Integral
         const from = expression.removeAfter("from");
@@ -25,13 +22,13 @@ const eval = function(expression) {
 
         const inputExpressionArr = Algebrite.run(expression.content, true);
         
-        inputExpressionStr = "Definite Integral from " + valsArr[0] + " to " + valsArr[1] + " of: " + inputExpressionArr[0];
-        inputExpressionTeX = ("\\int_{" + valsArr[0] + "}^{" + valsArr[1] + "}{" + inputExpressionArr[1] + "} \\,d" + respectToArr[0]);
+        const inputExpressionStr = "Definite Integral from " + valsArr[0] + " to " + valsArr[1] + " of: " + inputExpressionArr[0];
+        const inputExpressionTeX = ("\\int_{" + valsArr[0] + "}^{" + valsArr[1] + "}{" + inputExpressionArr[1] + "} \\,d" + respectToArr[0]);
         
         const outputExpressionArr = Algebrite.run("defint(" + expression.content + "," + respectToArr[0] + "," + vals + ")");
         
-        outputExpressionStr = outputExpressionArr[0];
-        outputExpressionTeX = outputExpressionArr[1];
+        expressionStr = inputExpressionStr + " = " + outputExpressionArr[0];
+        expressionTeX = inputExpressionTeX + "=" + outputExpressionArr[1];
     
         //evalReply("defint(" + expression.content + "," + respectToArr[0] + "," + vals + ")", ev, finalExpressionTeX);
 
@@ -47,19 +44,18 @@ const eval = function(expression) {
         }
         const inputExpressionArr = Algebrite.run(expression.content, true);
 
-        inputExpressionStr = "Indefinite Integral (Order " + respectToArr.length + ") of: " + inputExpressionArr[0];
-        inputExpressionTeX = ("\\" + intIs + "nt{" + inputExpressionArr[1] + "}" + intDs);
+        const inputExpressionStr = "Indefinite Integral (Order " + respectToArr.length + ") of: " + inputExpressionArr[0];
+        const inputExpressionTeX = ("\\" + intIs + "nt{" + inputExpressionArr[1] + "}" + intDs);
         
         const outputExpressionArr = Algebrite.run("integral(" + expression.content + "," + respectTo + ")");
         
-        outputExpressionStr = outputExpressionArr[0] + "+ constant";
-        outputExpressionTeX = outputExpressionArr[1] + "+\\text{constant}";
-
+        expressionStr = inputExpressionStr + " = " + outputExpressionArr[0] + "+ constant";
+        expressionTeX = inputExpressionTeX + "=" + outputExpressionArr[1] + "+\\text{constant}";
         //evalReply("integral(" + expression.content + "," + respectTo + ")", ev, finalExpressionTeX, false, "+C");
     }
     
     Algebrite.clearall();
-    return [[inputExpressionStr, outputExpressionStr], [inputExpressionTeX, outputExpressionTeX]];
+    return [expressionStr, expressionTeX];
     
 };
 

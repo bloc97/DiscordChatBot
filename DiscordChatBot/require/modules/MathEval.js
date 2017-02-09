@@ -1,6 +1,6 @@
 //http://www.rejoicealways.net/lcu-semesters/fall2010/mat1302/Eigenmath.pdf
 //EigenMath Manual
-const utils = require("../utils.js");
+const utils = require("./Addons/Utils.js");
 const Algebrite = require("./Interpreters/Algebrite.js");
 //const Algebrite = require("algebrite");
 const Jimp = require("jimp");
@@ -158,50 +158,50 @@ const evalReply = function(expression, ev, evaltext, anstextpre, anstextpost, is
     }
 };
 
-const eval = function(expression) {
-    return Algebrite.run(expression, true);
-    
-};
 
-const getReplyTeX = function(tex, pre, post) {
+
+const parseOutputTeX = function(tex) {
     let outTeX = tex;
     //console.log(outstr);
     
     if (outTeX.indexOf("not find") > -1) {
         outTeX = "\\text{Sorry, could not find a solution.}";
-        prestr = prestr || " ";
     } else if (outTeX.indexOf("Stop") > -1) {
-        prestr = prestr || " ";
+        
     }
     
-    prestr = prestr || "Answer:%20{";
-    poststr = poststr || "}";
+    //prestr = prestr || "Answer:%20{";
+    //poststr = poststr || "}";
     
-    let finalTeX = prestr + outTeX + poststr;
+    let finalTeX = outTeX;
     
     finalTeX = finalTeX.replace(/ /gi, "%20"); //replaces " " with %20 according to web specifications
     finalTeX = finalTeX.replace(/\$\$\$\$\r?\n/gi, ""); //remove empty $$$$, bugs the website
     finalTeX = finalTeX.replace(/\r?\n/gi, "\\\\"); //replace line end with \\
     
     //finalTeX = fixExpLatex(finalTeX);
-    finalTeX = fixFloatLatex(finalTeX);
+    finalTeX = utils.fixFloatLatex(finalTeX);
     return finalTeX;
-    
-    const urlTeX = "https://latex.codecogs.com/png.latex?{" + finalTeX + "}";
 };
 
-const getReplyMsg = function(str, pre, post) {
+const parseOutputStr = function(str) {
     
 };
 
-const replyTeX = function(ev, tex, str) {
-    const urlTeX = "https://latex.codecogs.com/png.latex?{" + tex + "}";
+
+const replyTeX = function(ev, outputArr) {
+    let str = outputArr[0];
+    let tex = outputArr[1];
+    tex = parseOutputTeX(tex);
     
+    urlTeX = "https://latex.codecogs.com/png.latex?{" + tex + "}";
     Jimp.read(urlTeX, function(err, image){
         try {
             image.invert();
             image.getBuffer(Jimp.MIME_PNG, function(err, data) {
-                        ev.channel.sendFile(data);
+                ev.channel.sendFile(data).then(function(message) {
+                    
+                }).catch(err => {});
             });
         } catch (err) {
             ev.reply(str).then().catch(err =>{});
@@ -211,7 +211,9 @@ const replyTeX = function(ev, tex, str) {
     });
 };
 
-const replyMsg = function(ev, str) {
+const replyMsg = function(ev, outputArr) {
+    let str = outputArr[0];
+    
     ev.reply(str).then().catch(err =>{});
 };
 
