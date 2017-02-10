@@ -6,7 +6,7 @@ This could not be possible without them and their hard work maintaining those li
 
 It currently supports symbolic integration, derivation, sums and products.
 
-![Demo Image](https://raw.githubusercontent.com/bloc97/DiscordChatBot/MiniAlpha/resources/demo2.png)
+![Demo Image](https://raw.githubusercontent.com/bloc97/DiscordChatBot/MiniAlpha/resources/demo_2.png)
 
 Much more is planned, such as:
 
