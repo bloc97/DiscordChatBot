@@ -62,7 +62,7 @@ Keywords:
 ` + "```";
 
 
-class MathEval { //This is an module that adds some essential commands to the selfbot
+class MiniAlpha { //This is an module that adds some essential commands to the selfbot
     
     constructor(debug) {
         this.name = "MALP";
@@ -150,11 +150,14 @@ const parseOutputTeX = function(tex) {
     
     //finalTeX = fixExpLatex(finalTeX);
     finalTeX = utils.fixFloatLatex(finalTeX);
+    finalTeX = utils.fixPiLatex(finalTeX);
+    finalTeX = utils.fixLogLatex(finalTeX);
     return finalTeX;
 };
 
 const parseOutputStr = function(str) {
-    
+    str = utils.fixLogStr(str);
+    return str;
 };
 
 
@@ -166,6 +169,7 @@ const replyTeX = function(ev, outputArr) {
     }
     
     tex = parseOutputTeX(tex);
+    str = parseOutputStr(str);
     
     urlTeX = "https://latex.codecogs.com/png.latex?\\\\" + tex + "";
     console.log(tex);
@@ -263,4 +267,4 @@ class Expression {
 }
 
 
-module.exports = MathEval;
+module.exports = MiniAlpha;

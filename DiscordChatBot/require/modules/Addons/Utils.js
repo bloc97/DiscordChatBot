@@ -1,9 +1,16 @@
+
+const Mathjs = require("../Interpreters/Math.js");
+
 const isLetter = function(char) {
     return char.toLowerCase() !== char.toUpperCase();
 };
 
 const isNumber = function(char) {
     return +char === +char;
+};
+
+const isInfinite = function(num) {
+    return (num === Infinity || num === -Infinity);
 };
 
 const findVariable = function(str) {
@@ -73,29 +80,6 @@ const fixExpInput = function(str) {
     return textPart.join("");
 };
 
-
-const fixExpLatex = function(str) {
-    
-    let textPart = [];
-    let lastindex = 0;
-    
-    for (let i=0; i<str.length-1; i++) {
-        if (str[i] === "^") {
-            const nextindex = findNextDifferentChar(str, i+1); //find next character that isn't similar to the one after the "^"
-            if (nextindex === -1) {
-                continue;
-            }
-            
-            textPart.push(str.slice(lastindex, i+1)); //push the unchanged part
-            textPart.push("{" + str.slice(i+1, nextindex) + "}"); //push the exponent part in brackets
-            lastindex = nextindex;
-            i = nextindex-1; //skip the part already saved
-        }
-    }
-    textPart.push(str.slice(lastindex, str.length)); //push in the last part that was not detected
-    return textPart.join("");
-};
-
 const fixFloatLatex = function(str) {
     
     let textPart = [];
@@ -108,7 +92,7 @@ const fixFloatLatex = function(str) {
                 continue;
             }
             
-            textPart.push(str.slice(lastindex, i) + "\\times{}10^"); //push the unchanged part
+            textPart.push(str.slice(lastindex, i) + "\\times10^"); //push the unchanged part
             textPart.push(("{" + str.slice(i+1, nextindex) + "}").replace("+", "")); //push the exponent part in brackets
             lastindex = nextindex;
             i = nextindex-1; //skip the part already saved
@@ -119,10 +103,72 @@ const fixFloatLatex = function(str) {
     
 };
 
+const fixPiLatex = function(str) {
+    str = str.replace(/\\pi/gi, "\\pi\\,");
+    return str;
+};
+
+const fixLogLatex = function(str) {
+    str = str.replace(/log10[(]/gi, "log_{10}(");
+    str = str.replace(/log[(]/gi, "ln(");
+    return str;
+};
+
+const fixLogStr = function(str) {
+    str = str.replace(/log[(]/gi, "ln(");
+    return str;
+};
+
+const fixLogAlgebrite = function(str) {
+    str = str.replace(/log[(]/gi, "log10(");
+    return str;
+};
+
+const fixLnMathjs = function(str) {
+    str = str.replace(/log[(]/gi, "log10(");
+    str = str.replace(/ln[(]/gi, "log(");
+    return str;
+};
+
+const findE = function(num) {
+    if (!isNumber(num) || isInfinite(num) || num < 1e-4) {
+        return [num, num];
+    }
+    
+    const value = num/Math.E;
+    let integer = Math.abs(Math.floor(value));
+    integer = (integer > 1) ? integer : "";
+    const fractional = value%1;
+    const fraction = Mathjs.fraction(fractional);
+    
+    let output = [];
+    if (fractional < 1e-6) {
+        output[0] = integer + "e";
+        output[1] = integer + "e";
+    } else if ((fraction.d + "").length < 4) {
+        const sign = (fraction.s < 0) ? "-" : "";
+        output[0] = " " + sign + integer + fraction.n + "/" + fraction.d + "e";
+        output[1] = sign + integer + "\\frac{" + fraction.n + "}{" + fraction.d + "}e";
+    } else {
+        return [num, num];
+    }
+    
+    return output;
+};
+
 exports.isLetter = isLetter;
 exports.isNumber = isNumber;
+exports.isInfinite = isInfinite;
+
 exports.findVariable = findVariable;
 exports.getVariables = getVariables;
 exports.fixExpInput = fixExpInput;
-exports.fixExpLatex = fixExpLatex;
 exports.fixFloatLatex = fixFloatLatex;
+exports.fixPiLatex = fixPiLatex;
+exports.fixLogLatex = fixLogLatex;
+exports.fixLogStr = fixLogStr;
+exports.fixLogAlgebrite = fixLogAlgebrite;
+exports.fixLnMathjs = fixLnMathjs;
+
+
+exports.findE = findE;
