@@ -4,7 +4,7 @@ Side project to the main DiscordChatBot branch, this bot is named "MiniAlpha"
 This discord bot uses Algebrite and Mathjs. 
 This could not be possible without them and their hard work maintaining those libraries.  
 
-It currently supports symbolic integration, derivation, sums and products.
+It currently supports symbolic integration, differentiation, sums and products.
 
 ![Demo Image](https://raw.githubusercontent.com/bloc97/DiscordChatBot/MiniAlpha/resources/demo_2.png)
 
