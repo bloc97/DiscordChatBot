@@ -1,26 +1,33 @@
 # DiscordChatBot
-Discord API Bot Wrapper, WIP
+Side project to the main DiscordChatBot branch
 
-When finished, this wrapper will allow native complex state machines for Discord Bots.  
->What are State Machines?  
-https://en.wikipedia.org/wiki/Finite-state_machine
+This discord bot uses Algebrite and Mathjs. 
+This could not be possible without them and their hard work maintaining those libraries.  
 
->Why is that useful?  
-It is useful for :  
-Machine learning  
-Natural Language Processing  
-Logic Tree AI  
+It currently supports symbolic integration, derivation, sums and products.
 
->And what are those useful for?  
-Ok, if you don't know what those are you are on the wrong project page...
+![Demo Image](https://raw.githubusercontent.com/bloc97/DiscordChatBot/MiniAlpha/resources/demo.png)
 
->Why abstract one level further, when there are already Discord.js, Eris, Discord.Net, etc.?  
-All Discord APIs in javascript are event based, and it is easier to implement an AI with all the events being synchronised.  
-This API will allow dynamic module loading, which further simplifies the implementation of a state machine.   
+Much more is planned, such as:
+
+Huge number exponentiation/factorial
+Gamma function
+Vector, matrices  
+Taylor Expansion  
+Root solve  
+Jacobian, Hessian, Hilbert matrices
+Factors  
+Rationalization  
+Simplification  
+
+Base conversion  
+Unit conversion  
+
+Truth tables  
+Karnaugh maps  
+
 
 This currently requires these libraries:  
 use npm install as needed  
 https://github.com/hydrabolt/discord.js/  
 https://github.com/oliver-moran/jimp  
-https://github.com/josdejong/mathjs  
-https://github.com/mongodb/node-mongodb-native  
