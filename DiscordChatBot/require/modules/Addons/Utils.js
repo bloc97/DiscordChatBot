@@ -6,6 +6,24 @@ const isNumber = function(char) {
     return +char === +char;
 };
 
+const findVariable = function(str) {
+    const index = str.search(/(^|[^a-z])[a-df-z]([^a-z]|$)/i); //find free variables
+    const variable = str[index+1];
+    return variable;
+};
+
+const getVariables = function(expression) {
+    const variables = [];
+    for (let i=0; i<expression.length-2; i++) {
+        if (!isLetter(expression[i]) && (isLetter(expression[i+1]) && expression[i+1] !== "e") && !isLetter(expression[i+2])) {
+            if (variables.indexOf(expression[i+1]) === -1) {
+                variables.push(expression[i+1]);
+            }
+        }
+    }
+    return variables;
+};
+
 const findNextDifferentChar = function(str, index) { //find the next dissimilar character
     if (isNumber(str[index])) { //if character is a number, return next character that isn't a number
         for (let i=index; i<str.length; i++) {
@@ -91,7 +109,7 @@ const fixFloatLatex = function(str) {
             }
             
             textPart.push(str.slice(lastindex, i) + "\\times{}10^"); //push the unchanged part
-            textPart.push("{" + str.slice(i+1, nextindex) + "}"); //push the exponent part in brackets
+            textPart.push(("{" + str.slice(i+1, nextindex) + "}").replace("+", "")); //push the exponent part in brackets
             lastindex = nextindex;
             i = nextindex-1; //skip the part already saved
         }
@@ -101,7 +119,10 @@ const fixFloatLatex = function(str) {
     
 };
 
-
+exports.isLetter = isLetter;
+exports.isNumber = isNumber;
+exports.findVariable = findVariable;
+exports.getVariables = getVariables;
 exports.fixExpInput = fixExpInput;
 exports.fixExpLatex = fixExpLatex;
 exports.fixFloatLatex = fixFloatLatex;

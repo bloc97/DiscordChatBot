@@ -1,4 +1,4 @@
-const Algebrite = require("./Interpreters/Algebrite.js");
+const Algebrite = require("../Interpreters/Algebrite.js");
 
 
 const eval = function(expression) {
@@ -25,36 +25,43 @@ const eval = function(expression) {
         const inputExpressionStr = "Definite Integral from " + valsArr[0] + " to " + valsArr[1] + " of: " + inputExpressionArr[0];
         const inputExpressionTeX = ("\\int_{" + valsArr[0] + "}^{" + valsArr[1] + "}{" + inputExpressionArr[1] + "} \\,d" + respectToArr[0]);
         
-        const outputExpressionArr = Algebrite.run("defint(" + expression.content + "," + respectToArr[0] + "," + vals + ")");
+        const outputExpressionArr = Algebrite.run("defint(" + expression.content + "," + respectToArr[0] + "," + vals + ")", true);
         
         expressionStr = inputExpressionStr + " = " + outputExpressionArr[0];
         expressionTeX = inputExpressionTeX + "=" + outputExpressionArr[1];
-    
-        //evalReply("defint(" + expression.content + "," + respectToArr[0] + "," + vals + ")", ev, finalExpressionTeX);
-
+        
     } else { //Indefinite Integral
         let respectTo = respectToArr.join(",");
 
         let intIs = "";
         let intDs = "";
-
-        for (let i=0; i<respectToArr.length; i++) {
-            intIs = intIs + "i";
-            intDs = intDs + "\\,d" + respectToArr[i];
+        
+        if (respectToArr.length <= 4) {
+            for (let i=0; i<respectToArr.length; i++) {
+                intIs = intIs + "i";
+                intDs = intDs + "\\,d" + respectToArr[i];
+            }
+            intIs = "\\" + intIs + "nt";
+        } else {
+            for (let i=0; i<respectToArr.length; i++) {
+                intDs = intDs + "\\,d" + respectToArr[i];
+            }
+            intIs = "\\underbrace{\\idotsint}_{" + respectToArr.length + "}";
         }
+        
         const inputExpressionArr = Algebrite.run(expression.content, true);
 
         const inputExpressionStr = "Indefinite Integral (Order " + respectToArr.length + ") of: " + inputExpressionArr[0];
-        const inputExpressionTeX = ("\\" + intIs + "nt{" + inputExpressionArr[1] + "}" + intDs);
+        const inputExpressionTeX = (intIs + "{" + inputExpressionArr[1] + "}" + intDs);
         
-        const outputExpressionArr = Algebrite.run("integral(" + expression.content + "," + respectTo + ")");
+        const outputExpressionArr = Algebrite.run("integral(" + expression.content + "," + respectTo + ")", true);
+        
         
         expressionStr = inputExpressionStr + " = " + outputExpressionArr[0] + "+ constant";
         expressionTeX = inputExpressionTeX + "=" + outputExpressionArr[1] + "+\\text{constant}";
-        //evalReply("integral(" + expression.content + "," + respectTo + ")", ev, finalExpressionTeX, false, "+C");
+
     }
     
-    Algebrite.clearall();
     return [expressionStr, expressionTeX];
     
 };

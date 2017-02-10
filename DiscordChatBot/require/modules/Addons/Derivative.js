@@ -1,5 +1,5 @@
-const Algebrite = require("./Interpreters/Algebrite.js");
-const utils = require("./Addons/Utils.js");
+const Algebrite = require("../Interpreters/Algebrite.js");
+const utils = require("./Utils.js");
 
 
 const eval = function(expression) {
@@ -15,11 +15,20 @@ const eval = function(expression) {
     }
     const valsArr = vals.split(",");
 
-    const finalExpressionTeX = getDerivStr(expression.content, valsArr);
     //console.log(finalExpressionTeX);
     //console.log(expression.content);
     //evalReply("d(" + expression.content + "," + vals + ")", ev, finalExpressionTeX);
     
+
+    const inputExpressionArr = getDerivArr(expression.content, valsArr);
+
+    const outputExpressionArr = Algebrite.run("d(" + expression.content + "," + vals + ")", true);
+
+    const expressionStr = inputExpressionArr[0] + " = " + outputExpressionArr[0];
+    const expressionTeX = inputExpressionArr[1] + "=" + outputExpressionArr[1];
+    
+    Algebrite.clearall();
+    return [expressionStr, expressionTeX];
 };
 
 const evalalt = function(expression) {
@@ -31,19 +40,30 @@ const evalalt = function(expression) {
         valsArr = ["x"];
     }
     let vals = valsArr.join(",");
-    const finalExpressionTeX = getDerivStr(expression.content, valsArr);
+    
+    const inputExpressionArr = getDerivArr(expression.content, valsArr);
+
+    const outputExpressionArr = Algebrite.run("d(" + expression.content + "," + vals + ")", true);
+
+    const expressionStr = inputExpressionArr[0] + " = " + outputExpressionArr[0];
+    const expressionTeX = inputExpressionArr[1] + "=" + outputExpressionArr[1];
+    
+    return [expressionStr, expressionTeX];
+    
+    //const finalExpressionTeX = getDerivStr(expression.content, valsArr);
 
     //evalReply("d(" + expression.content + "," + vals + ")", ev, finalExpressionTeX);
 };
 
-const getDerivStr = function(expression, valsArr) {
-    const expressionTeX = Algebrite.run(expression, true)[1];
+const getDerivArr = function(expression, valsArr) {
+    const expressionArr = Algebrite.run(expression, true);
+    const expressionTeX = expressionArr[1];
     expression = " " + expression + " "; //Pad the input
     
     //Find out the number of variables (derivative or partial derivative)
     const variables = [];
     for (let i=0; i<expression.length-2; i++) {
-        if (!isLetter(expression[i]) && isLetter(expression[i+1]) && !isLetter(expression[i+2])) {
+        if (!utils.isLetter(expression[i]) && utils.isLetter(expression[i+1]) && !utils.isLetter(expression[i+2])) {
             if (variables.indexOf(expression[i+1]) === -1) {
                 variables.push(expression[i+1]);
             }
@@ -87,5 +107,12 @@ const getDerivStr = function(expression, valsArr) {
         derivstr = "\\frac{" + dsymbol + "^{" + dorder + "}}{" + derivstr + "}";
     }
     
-    return derivstr + "\\bigg({" + expressionTeX + "}\\bigg)";
+    const inputExpressionStr = valsArr.map(function(x) {return "d/d" + x;}).join(" ") + " " + expressionArr[0];
+    const inputExpressionTeX = derivstr + "\\bigg({" + expressionTeX + "}\\bigg)";
+    
+    return [inputExpressionStr, inputExpressionTeX];
 };
+
+
+exports.eval = eval;
+exports.evalalt = evalalt;
