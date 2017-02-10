@@ -1,5 +1,5 @@
-# DiscordChatBot
-Side project to the main DiscordChatBot branch
+# DiscordChatBot - "MiniAlpha"
+Side project to the main DiscordChatBot branch, this bot is named "MiniAlpha"
 
 This discord bot uses Algebrite and Mathjs. 
 This could not be possible without them and their hard work maintaining those libraries.  
