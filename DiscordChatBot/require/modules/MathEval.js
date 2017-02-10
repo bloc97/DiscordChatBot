@@ -1,11 +1,14 @@
 //http://www.rejoicealways.net/lcu-semesters/fall2010/mat1302/Eigenmath.pdf
 //EigenMath Manual
 const utils = require("./Addons/Utils.js");
+const Jimp = require("jimp");
 const Algebrite = require("./Interpreters/Algebrite.js");
 //const Algebrite = require("algebrite");
-const Jimp = require("jimp");
 
 const Integral = require("./Addons/Integral.js");
+const Derivative = require("./Addons/Derivative.js");
+const Sum = require("./Addons/Sum.js");
+const Product = require("./Addons/Product.js");
 
 const helpMain = "```" + 
 `MiniAlpha Help
@@ -32,7 +35,7 @@ const helpMain = "```" +
    simplify
    
    
-   taylor
+   taylor (invert the additions by counting parenthesis)
    limit
 
    base conversion
@@ -57,6 +60,7 @@ Keywords:
    last, ans --Last answer obtained
 
 ` + "```";
+
 
 class MathEval { //This is an module that adds some essential commands to the selfbot
     
@@ -91,20 +95,23 @@ class MathEval { //This is an module that adds some essential commands to the se
         }
         
         const expression = new Expression(text, command);
-        const outputArr = [];
+        let outputArr = ["",""];
         expression.removeAllInstance("evaluate");
         
         if (expression.contains("integral ")) {
-            
             outputArr = Integral.eval(expression);
-            replyTeX(ev, outputArr);
-            return;
             
         } else if (expression.contains("derivative ")) {
-        
+            outputArr = Derivative.eval(expression);
+            
         } else if (expression.contains("d/d")) {
-        
-        } else if (expression.contains("sum")) {
+            outputArr = Derivative.evalalt(expression);
+            
+        } else if (expression.contains("sum ")) {
+            outputArr = Sum.eval(expression);
+            
+        } else if (expression.contains("product ")) {
+            outputArr = Product.eval(expression);
             
         } else {
             
@@ -113,6 +120,8 @@ class MathEval { //This is an module that adds some essential commands to the se
             
         }
         
+        replyTeX(ev, outputArr);
+        Algebrite.clearall();
         
         
         
@@ -152,9 +161,14 @@ const parseOutputStr = function(str) {
 const replyTeX = function(ev, outputArr) {
     let str = outputArr[0];
     let tex = outputArr[1];
+    if (str.length === 0 && tex.length === 0) {
+        return;
+    }
+    
     tex = parseOutputTeX(tex);
     
-    urlTeX = "https://latex.codecogs.com/png.latex?{" + tex + "}";
+    urlTeX = "https://latex.codecogs.com/png.latex?\\\\" + tex + "";
+    console.log(tex);
     Jimp.read(urlTeX, function(err, image){
         try {
             image.invert();
@@ -180,8 +194,12 @@ const replyMsg = function(ev, outputArr) {
 class Expression {
     
     constructor(msg, command) {
-        this.content = fixExpInput(msg);
+        this.content = msg;
         this.removeAllInstance("minialpha");
+        this.fixInput();
+    }
+    fixInput() {
+        this.content = utils.fixExpInput(this.content);
     }
     contains(str) {
         return this.content.indexOf(str) > -1;
