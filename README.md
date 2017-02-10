@@ -10,12 +10,12 @@ It currently supports symbolic integration, derivation, sums and products.
 
 Much more is planned, such as:
 
-Huge number exponentiation/factorial
-Gamma function
+Huge number exponentiation/factorial  
+Gamma function  
 Vector, matrices  
 Taylor Expansion  
 Root solve  
-Jacobian, Hessian, Hilbert matrices
+Jacobian, Hessian, Hilbert matrices  
 Factors  
 Rationalization  
 Simplification  
