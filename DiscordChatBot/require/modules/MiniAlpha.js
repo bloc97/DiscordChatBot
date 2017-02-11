@@ -14,50 +14,18 @@ const helpMain = "```" +
 `MiniAlpha Help
    Use syntax similar to WolframAlpha.
 
-   evaluate -symbolic parser
-   compute  -numerical parser
-   qcompute -approximations
-   convert  -converter
-
-   integral
-   derivative
-   sum
-   product
-   root (use taylor to find root, if can't find, use newton, then use iterative method)
-   jacobian gradient
-   hessian
-   
-   is prime (Maximum of 2^1279-1 M1279, bigger primes hang)
-   factor
-   rationalize
-   
-   
-   simplify
-   
-   
-   taylor (invert the additions by counting parenthesis)
-   limit
-
-   base conversion
-   truth table
-   karnaugh map
-
 Examples:
    integral of x^2
-   integral of sin(2x) from 0 to pi/2
-   integral of sqrt(x y) + x sin(y)
+   integral of x^2 dx dx dx
+   integral of sin(2x) dx from 0 to pi/2
+   integral of sqrt(x y) + x sin(y) dx dy
    derivative of e^x
    derivative of sqrt(34-x+y) with respect to y
+   derivative of sqrt(34-x+y) with respect to y,y
    d/dx e^x
    d/dx d/dx sin(x)
    d/dx d/dt t*sin(x+t)
 
-You can also use direct commands from Eigenmath.
-http://www.rejoicealways.net/lcu-semesters/fall2010/mat1302/Eigenmath.pdf
-https://qedinsight.wordpress.com/2011/04/22/a-practical-use-for-logarithms-part-2-how-we-multiplied-large-numbers-40-years-ago-and-how-integral-transforms-use-the-same-basic-idea/
-
-Keywords:
-   last, ans --Last answer obtained
 
 ` + "```";
 
@@ -268,3 +236,55 @@ class Expression {
 
 
 module.exports = MiniAlpha;
+
+
+const helpOld = "```" + 
+`MiniAlpha Help
+   Use syntax similar to WolframAlpha.
+
+   evaluate -symbolic parser
+   compute  -numerical parser
+   qcompute -approximations
+   convert  -converter
+
+   integral
+   derivative
+   sum
+   product
+   root (use taylor to find root, if can't find, use newton, then use iterative method)
+   jacobian gradient
+   hessian
+   
+   is prime (Maximum of 2^1279-1 M1279, bigger primes hang)
+   factor
+   rationalize
+   
+   
+   simplify
+   
+   
+   taylor (invert the additions by counting parenthesis)
+   limit
+
+   base conversion
+   truth table
+   karnaugh map
+
+Examples:
+   integral of x^2
+   integral of sin(2x) from 0 to pi/2
+   integral of sqrt(x y) + x sin(y)
+   derivative of e^x
+   derivative of sqrt(34-x+y) with respect to y
+   d/dx e^x
+   d/dx d/dx sin(x)
+   d/dx d/dt t*sin(x+t)
+
+You can also use direct commands from Eigenmath.
+http://www.rejoicealways.net/lcu-semesters/fall2010/mat1302/Eigenmath.pdf
+https://qedinsight.wordpress.com/2011/04/22/a-practical-use-for-logarithms-part-2-how-we-multiplied-large-numbers-40-years-ago-and-how-integral-transforms-use-the-same-basic-idea/
+
+Keywords:
+   last, ans --Last answer obtained
+
+` + "```";
