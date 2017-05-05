@@ -67,6 +67,7 @@ const eval = function(expression) {
 
 
             }
+            //resultArr = [result,result];
             resultArr = utils.findE(result);
             resultArr[0] = Mathjs.format(resultArr[0], {precision: 14})
             resultArr[1] = Mathjs.format(resultArr[1], {precision: 14})

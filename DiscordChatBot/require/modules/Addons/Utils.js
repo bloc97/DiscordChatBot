@@ -2,11 +2,25 @@
 const Mathjs = require("../Interpreters/Math.js");
 
 const isLetter = function(char) {
+    if (!char) {
+        return false;
+    }
     return char.toLowerCase() !== char.toUpperCase();
 };
 
 const isNumber = function(char) {
+    if (!char) {
+        return false;
+    }
     return +char === +char;
+};
+
+const isBegin = function(index) {
+    return index === -1;
+};
+
+const isEnd = function(index, length) {
+    return index === length;
 };
 
 const isInfinite = function(num) {
@@ -21,10 +35,10 @@ const findVariable = function(str) {
 
 const getVariables = function(expression) {
     const variables = [];
-    for (let i=0; i<expression.length-2; i++) {
-        if (!isLetter(expression[i]) && (isLetter(expression[i+1]) && expression[i+1] !== "e") && !isLetter(expression[i+2])) {
-            if (variables.indexOf(expression[i+1]) === -1) {
-                variables.push(expression[i+1]);
+    for (let i=0; i<expression.length; i++) {
+        if ( (!isLetter(expression[i-1]) || isBegin(i-1)) && (isLetter(expression[i]) && expression[i] !== "e") && (!isLetter(expression[i+1]) || isEnd(i+1, expression.length)) ) {
+            if (variables.indexOf(expression[i]) === -1) {
+                variables.push(expression[i]);
             }
         }
     }
